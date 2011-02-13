@@ -1,6 +1,7 @@
 
 #include "Particle.hh"
 #include "Simulator.hh"
+#include "Display.hh"
 
 int main( int argc, char *argv[] )
 {
@@ -17,5 +18,8 @@ int main( int argc, char *argv[] )
 
     Simulator sim( particles );
     sim.step();
+
+    Display display( particles );
+    display.draw();
 }
 
