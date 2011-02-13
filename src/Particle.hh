@@ -13,8 +13,8 @@ public:
 
 public:
 
-    Imath::V3f pos;
-    Imath::V3f vel;
+    Imath::V2f pos;
+    Imath::V2f vel;
     float mass;
 };
 
