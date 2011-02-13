@@ -9,13 +9,13 @@ class Particle
 {
 public:
 
-	Particle() {}
+    Particle() {}
 
 public:
 
-	Imath::V3f pos;
-	Imath::V3f vel;
-	float mass;
+    Imath::V3f pos;
+    Imath::V3f vel;
+    float mass;
 };
 
 

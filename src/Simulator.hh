@@ -7,14 +7,14 @@ class Simulator
 {
 public:
 
-	Simulator( ParticlePtrArray& particles )
-	 : m_particles( particles ) {}
+    Simulator( ParticlePtrArray& particles )
+     : m_particles( particles ) {}
 
-	void step() {}
+    void step() {}
 
 private:
 
-	ParticlePtrArray& m_particles;
+    ParticlePtrArray& m_particles;
 };
 
 
