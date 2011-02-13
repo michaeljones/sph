@@ -1,6 +1,8 @@
 DEPS="src/main.o"
 
-redo-ifchange $DEPS
+HEADER_DEPS="src/*.hh"
+
+redo-ifchange $DEPS $HEADER_DEPS
 
 g++ -o $3 $DEPS
 
