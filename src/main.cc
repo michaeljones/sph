@@ -4,6 +4,18 @@
 #include "Display.hh"
 
 #include <stdlib.h>
+#include <algorithm>
+
+class deleter
+{
+public:
+    deleter() {}
+
+    void operator()( Particle* particle )
+    {
+        delete particle;
+    }
+};
 
 int main( int argc, char *argv[] )
 {
@@ -22,12 +34,12 @@ int main( int argc, char *argv[] )
         particles[i] = new Particle( Imath::V2f( x, y ) );
     }
 
-    std::cerr << "mpj-debug: " << particles.size() << std::endl;
-
     Simulator sim( particles );
     sim.step();
 
     Display display( particles );
     display.draw();
+
+    std::for_each( particles.begin(), particles.end(), deleter() );
 }
 
