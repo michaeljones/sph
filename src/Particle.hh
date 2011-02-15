@@ -9,13 +9,18 @@ class Particle
 {
 public:
 
-    Particle() {}
+    Particle( const Imath::V2f& pos )
+     : m_pos( pos ), m_vel( 0.0f ), m_mass( 1.0f )  {}
 
-public:
+    const Imath::V2f& pos() const { return m_pos; }
+    const Imath::V2f& vel() const { return m_vel; }
+    float mass() const { return m_mass; }
 
-    Imath::V2f pos;
-    Imath::V2f vel;
-    float mass;
+private:
+
+    Imath::V2f m_pos;
+    Imath::V2f m_vel;
+    float m_mass;
 };
 
 

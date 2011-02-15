@@ -1,4 +1,3 @@
-#!/bin/zsh
 
 redo-ifchange $1.cc
 

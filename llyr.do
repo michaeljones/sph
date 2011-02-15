@@ -1,4 +1,4 @@
-DEPS="src/main.o"
+DEPS="src/main.o src/Simulator.o"
 
 HEADER_DEPS="src/*.hh"
 
