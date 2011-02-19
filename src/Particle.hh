@@ -10,18 +10,21 @@ class Particle
 public:
 
     Particle( const Imath::V2f& pos )
-     : pos( pos ),
+     : mass( 1.0f ), 
+       density( 0.0f ),
+       pressure( 0.0f ),
+       pos( pos ),
        vel( 0.0f ),
-       mass( 1.0f ), 
-       density( 0.0f ) {}
+       force( 0.0f ) {}
 
 public:
 
-    Imath::V2f pos;
-    Imath::V2f vel;
     float mass;
     float density;
     float pressure;
+
+    Imath::V2f pos;
+    Imath::V2f vel;
     Imath::V2f force;
 };
 

@@ -110,6 +110,20 @@ void Simulator::step()
         p1->force += f1_viscosity;
         p2->force += f2_viscosity;
     }
+
+    const Imath::V2f zero( 0.0f );
+
+    for ( unsigned int i=0; i<numParticles; ++i )
+    {
+        const float dt = 1.0f / 24.0f;
+
+        Particle* p = m_particles[ i ];
+
+        p->vel += ( p->force / p->mass ) * dt;
+        p->pos += p->vel * dt;
+
+        p->force = zero;
+    }
 }
 
 

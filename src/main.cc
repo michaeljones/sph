@@ -19,7 +19,7 @@ public:
 
 int main( int argc, char *argv[] )
 {
-    std::cerr << "Initialising Llyr" << std::endl;
+    std::cout << "Initialising Llyr" << std::endl;
 
     srand48( 0 );
 
@@ -35,11 +35,17 @@ int main( int argc, char *argv[] )
     }
 
     Simulator sim( particles );
-    sim.step();
-
     Display display( particles );
-    display.draw();
+
+    for ( unsigned int i=0; i<10; ++i )
+    {
+        std::cout << "Step " << i << std::endl;
+        sim.step();
+        display.draw();
+    }
 
     std::for_each( particles.begin(), particles.end(), deleter() );
+
+    std::cout << "Finished." << std::endl;
 }
 
