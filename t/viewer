@@ -1,0 +1,5 @@
+
+export LD_LIBRARY_PATH=${0%viewer}../lib
+
+$0.bin
+
