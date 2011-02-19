@@ -21,6 +21,8 @@ public:
     Imath::V2f vel;
     float mass;
     float density;
+    float pressure;
+    Imath::V2f force;
 };
 
 
