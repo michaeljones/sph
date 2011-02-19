@@ -37,9 +37,8 @@ void Simulator::step()
 
         for ( unsigned int j=i+1; j<numParticles; ++j )
         {
-            // We don't skip the i==j case as the poly6 is not singular
+            //  We don't skip the i==j case as the poly6 is not singular
             //
-
             Particle* p2 = m_particles[j];
             
             Imath::V2f diff = p1->pos - p2->pos;
@@ -60,7 +59,7 @@ void Simulator::step()
 
             interactions.push_back( Interaction( i, j, diff, r2, W ) );
 
-            // Calculate density for each particle
+            //  Calculate density for each particle
             //
             p1->density += W * p2->mass;
             p2->density += W * p1->mass;
@@ -84,7 +83,7 @@ void Simulator::step()
         const float r2 = interaction.r2;
         const float r = sqrt( r2 );
 
-        // Pressure calculations
+        //  Pressure calculations
         //
         const float c = - ( 315.0f * 3.0f ) / ( 32.0f * M_PI * d9 );
         const float a = d2 - r2;
@@ -100,6 +99,16 @@ void Simulator::step()
         p1->force += f1_pressure * n;
         p2->force += f2_pressure * -n;
 
+        //  Viscosity Calculations
+        //
+        const float d2Wdr2 = c * ( 7 * r2 - 3 * d2) * ( r2 - d2 );
+        const float mu = 1.0f;
+
+        const Imath::V2f f1_viscosity = mu * p2->mass * ( p2->vel - p1->vel ) * d2Wdr2 / ( p2->density );
+        const Imath::V2f f2_viscosity = mu * p1->mass * ( p1->vel - p2->vel ) * d2Wdr2 / ( p2->density );
+
+        p1->force += f1_viscosity;
+        p2->force += f2_viscosity;
     }
 }
 
