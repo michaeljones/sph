@@ -96,8 +96,10 @@ void Simulator::step()
 
         Imath::V2f n = interaction.sep / r;
 
-        p1->force += f1_pressure * n;
-        p2->force += f2_pressure * -n;
+        // Though n is calculate as p2->p1, c is negative so to push p1 away
+        // from p2 we introduce a further negative
+        p1->force += f1_pressure * -n;
+        p2->force += f2_pressure * n;
 
         //  Viscosity Calculations
         //
@@ -115,7 +117,7 @@ void Simulator::step()
 
     for ( unsigned int i=0; i<numParticles; ++i )
     {
-        const float dt = 1.0f / 24.0f;
+        const float dt = 1.0f / 240.0f;
 
         Particle* p = m_particles[ i ];
 
