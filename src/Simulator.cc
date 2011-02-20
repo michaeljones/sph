@@ -65,9 +65,14 @@ void Simulator::step()
             p2->density += W * p1->mass;
         }
 
+        // Calculate pressure based on density
         const float k = 1.0f;
         const float averageDensity = 1.0f;
         p1->pressure = k * ( p1->density - averageDensity );
+
+        // Apply external forces
+        const Imath::V2f down( 0.0, -1.0 );
+        p1->force += down * p1->mass * 9.81f;
     }
 
     unsigned int numInteractions = interactions.size();
@@ -78,7 +83,6 @@ void Simulator::step()
         
         Particle* p1 = m_particles[ interaction.i ];
         Particle* p2 = m_particles[ interaction.j ];
-
 
         const float r2 = interaction.r2;
         const float r = sqrt( r2 );
