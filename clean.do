@@ -1,3 +1,3 @@
 
-rm -fr lib/*.so src/*.o t/viewer
+rm -fr lib/*.so src/*.o t/viewer-bin
 

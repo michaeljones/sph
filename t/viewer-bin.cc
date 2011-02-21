@@ -1,6 +1,10 @@
 
-#include "Particle.hh"
-#include "Simulator.hh"
+// Llyr Library includes
+#include <Particle.hh>
+#include <Simulator.hh>
+#include <Boundary.hh>
+
+// Helper includes
 #include "Display.hh"
 
 #include <stdlib.h>
@@ -18,14 +22,15 @@
 #define ESCAPE 27
 #define KEY_Q 938
 
+template < typename T >
 class deleter
 {
 public:
     deleter() {}
 
-    void operator()( Particle* particle )
+    void operator()( T* ptr )
     {
-        delete particle;
+        delete ptr;
     }
 };
 
@@ -156,7 +161,14 @@ int main(int argc, char **argv)
         particles[i] = new Particle( Imath::V2f( x, y ) );
     }
 
-    sim = new Simulator( particles );
+    BoundaryPtrArray boundaries;
+
+    Imath::V2f pos( 0.0f, -10.0f );
+    Imath::V2f normal( 1.0f, 1.0f );
+    normal.normalize();
+    boundaries.push_back( new PlaneBoundary( pos, normal, particles ) );
+
+    sim = new Simulator( particles, boundaries );
     display = new Display( particles );
 	
 	/* Start Event Processing Engine */	
@@ -165,7 +177,8 @@ int main(int argc, char **argv)
     delete sim;
     delete display;
 
-    std::for_each( particles.begin(), particles.end(), deleter() );
+    std::for_each( particles.begin(), particles.end(), deleter<Particle>() );
+    std::for_each( boundaries.begin(), boundaries.end(), deleter<Boundary>() );
 
     std::cout << "Finished." << std::endl;
 

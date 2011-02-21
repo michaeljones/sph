@@ -20,10 +20,17 @@ public:
 
 void Simulator::step()
 {
+    const unsigned int numBoundaries = m_boundaries.size();
+
+    for ( unsigned int i=0; i<numBoundaries; ++i )
+    {
+        m_boundaries[i]->resolve();
+    }
+
     const float smoothingDistance = 0.5;
     const float smoothingDistanceSquared = smoothingDistance * smoothingDistance;
 
-    unsigned int numParticles = m_particles.size();
+    const unsigned int numParticles = m_particles.size();
 
     std::vector< Interaction > interactions;
 
@@ -34,6 +41,9 @@ void Simulator::step()
     for ( unsigned int i=0; i<numParticles; ++i )
     {
         Particle* p1 = m_particles[i];
+
+        // std::cerr << "mpj-debug: p " << p1->pos << std::endl;
+        // std::cerr << "mpj-debug: v " << p1->vel << std::endl;
 
         for ( unsigned int j=i+1; j<numParticles; ++j )
         {
