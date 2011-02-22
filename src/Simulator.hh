@@ -12,10 +12,12 @@ public:
 
     Simulator(
             ParticlePtrArray& particles,
-            BoundaryPtrArray& boundaries
+            BoundaryPtrArray& boundaries,
+            std::ostream& logStream
             )
      : m_particles( particles ),
-       m_boundaries( boundaries ) {}
+       m_boundaries( boundaries ),
+       m_logStream( logStream ) {}
 
     void step();
 
@@ -23,6 +25,8 @@ private:
 
     ParticlePtrArray& m_particles;
     BoundaryPtrArray& m_boundaries;
+
+    std::ostream& m_logStream;
 };
 
 

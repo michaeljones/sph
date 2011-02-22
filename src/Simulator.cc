@@ -38,9 +38,14 @@ void Simulator::step()
     const float d2 = d * d;
     const float d9 = d2 * d2 * d2 * d2 * d;
 
+    const Imath::V2f zero( 0.0f );
+
     for ( unsigned int i=0; i<numParticles; ++i )
     {
         Particle* p1 = m_particles[i];
+
+        // Reset force on the particle
+        p1->force = zero;
 
         // std::cerr << "mpj-debug: p " << p1->pos << std::endl;
         // std::cerr << "mpj-debug: v " << p1->vel << std::endl;
@@ -127,8 +132,6 @@ void Simulator::step()
         p2->force += f2_viscosity;
     }
 
-    const Imath::V2f zero( 0.0f );
-
     for ( unsigned int i=0; i<numParticles; ++i )
     {
         const float dt = 1.0f / 2400.0f;
@@ -138,8 +141,7 @@ void Simulator::step()
         p->vel += ( p->force / p->mass ) * dt;
         p->pos += p->vel * dt;
 
-        p->force = zero;
+        m_logStream << i << " p " << p->pos << " v " << p->vel << std::endl;
     }
 }
-
 

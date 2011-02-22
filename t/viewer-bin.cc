@@ -6,6 +6,7 @@
 
 // Helper includes
 #include "Display.hh"
+#include "Validator.hh"
 
 #include <stdlib.h>
 #include <algorithm>
@@ -40,6 +41,7 @@ int window;
 
 Simulator* sim = NULL;
 Display* display = NULL;
+Validator* validator = NULL;
 
 void InitGL(int Width, int Height)
 {
@@ -81,6 +83,15 @@ void DrawGLScene()
 
     // Step the simulation forward
     sim->step();
+
+    if ( ! validator->valid() )
+    {
+		/* shut down our window */
+		glutDestroyWindow(window);
+
+		/* exit the program...normal termination. */
+		exit(0);
+    }
 
     // Draw the result
     display->draw();
@@ -168,12 +179,14 @@ int main(int argc, char **argv)
     Imath::V2f max( 0.13f, 0.13f );
     boundaries.push_back( new ContainerBoundary( max, min, particles ) );
 
-    sim = new Simulator( particles, boundaries );
+    validator = new NanValidator( particles );
+    sim = new Simulator( particles, boundaries, std::cout );
     display = new Display( particles );
 	
 	/* Start Event Processing Engine */	
 	glutMainLoop();	
 
+    delete validator;
     delete sim;
     delete display;
 
