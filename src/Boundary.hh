@@ -43,6 +43,9 @@ public:
                 continue;
             }
 
+            // Correct position
+            p->pos -= m_normal * dotProduct;
+
             const float velDot = m_normal.dot( p->vel );
             p->vel -= 2.0f * velDot * m_normal;
         }
@@ -98,6 +101,10 @@ private:
             return;
         }
 
+        // Correct position
+        p->pos -= normal * dotProduct;
+
+        // Reflect velocity
         const float velDot = normal.dot( p->vel );
         p->vel -= 2.0f * velDot * normal;
     }
