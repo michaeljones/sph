@@ -145,28 +145,28 @@ int main(int argc, char **argv)
 	/* Initialize our window. */
 	InitGL(640, 480);
 
+    glPointSize( 2.0f );
 
     std::cout << "Initialising Llyr" << std::endl;
 
     srand48( 0 );
 
-    const unsigned particleCount = 1000;
+    const unsigned particleCount = 100;
     ParticlePtrArray particles( particleCount );
 
     // Fill particle array
     for ( unsigned int i=0; i<particleCount; ++i )
     {
-        float x = ( drand48() - 0.5 ) * 10.0f;
-        float y = ( drand48() - 0.5 ) * 10.0f;
+        float x = ( drand48() - 0.5 ) * 0.125f;
+        float y = ( drand48() - 0.5 ) * 0.125f;
         particles[i] = new Particle( Imath::V2f( x, y ) );
     }
 
     BoundaryPtrArray boundaries;
 
-    Imath::V2f pos( 0.0f, -10.0f );
-    Imath::V2f normal( 1.0f, 1.0f );
-    normal.normalize();
-    boundaries.push_back( new PlaneBoundary( pos, normal, particles ) );
+    Imath::V2f min( -0.13f, -0.13f );
+    Imath::V2f max( 0.13f, 0.13f );
+    boundaries.push_back( new ContainerBoundary( max, min, particles ) );
 
     sim = new Simulator( particles, boundaries );
     display = new Display( particles );

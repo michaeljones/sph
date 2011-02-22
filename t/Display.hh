@@ -19,7 +19,7 @@ public:
         glBegin( GL_POINTS );
         for ( unsigned int i=0; i<numParticles; ++i )
         {
-            glVertex3f( m_particles[i]->pos.x, m_particles[i]->pos.y, -20.0f );
+            glVertex3f( m_particles[i]->pos.x, m_particles[i]->pos.y, -0.5f );
         }
         glEnd();
     }

@@ -27,7 +27,7 @@ void Simulator::step()
         m_boundaries[i]->resolve();
     }
 
-    const float smoothingDistance = 0.5;
+    const float smoothingDistance = 5.0f;
     const float smoothingDistanceSquared = smoothingDistance * smoothingDistance;
 
     const unsigned int numParticles = m_particles.size();
@@ -131,7 +131,7 @@ void Simulator::step()
 
     for ( unsigned int i=0; i<numParticles; ++i )
     {
-        const float dt = 1.0f / 240.0f;
+        const float dt = 1.0f / 2400.0f;
 
         Particle* p = m_particles[ i ];
 
