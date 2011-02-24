@@ -26,6 +26,7 @@ public:
         {
             Particle* p = m_particles[i];
 
+            // Check for nans with self equalilty fail
             if ( p->pos != p->pos )
                 return false;
         }

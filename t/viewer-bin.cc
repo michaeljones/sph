@@ -162,7 +162,7 @@ int main(int argc, char **argv)
 
     srand48( 0 );
 
-    const unsigned particleCount = 100;
+    const unsigned particleCount = 10;
     ParticlePtrArray particles( particleCount );
 
     // Fill particle array
