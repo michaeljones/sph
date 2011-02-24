@@ -35,7 +35,8 @@ void Simulator::step()
 
     const float d = smoothingDistance;
     const float d2 = d * d;
-    const float d6 = d2 * d2 * d2;
+    const float d5 = d2 * d2 * d;
+    const float d6 = d5 * d;
     const float d9 = d6 * d2 * d;
 
     const Imath::V2f zero( 0.0f );
@@ -110,35 +111,42 @@ void Simulator::step()
         Particle* p2 = m_particles[ interaction.j ];
 
         const float r2 = interaction.r2;
-
-        if ( r2 == 0 ) continue;
-
         const float r = sqrt( r2 );
 
-        //  Pressure calculations
-        //
-        //  Using Spiky kernel as noted in literature
-        //
-        const float c = - ( 45.0f / ( M_PI * d6 ) );
-        const float a = ( ( d2 + r2 ) / r ) - 2 * d;
+        // Don't calculate for zero separation as the force would be zero but
+        // due to the 1/r part it is nan
+        // TODO: Figure out why this happens so much
+        if ( r2 != 0 )
+        {
+            //  Pressure calculations
+            //
+            //  Using Spiky kernel as noted in literature
+            //
+            const float c = - ( 45.0f / ( M_PI * d6 ) );
+            const float a = ( ( d2 + r2 ) / r ) - 2 * d;
 
-        const Imath::V2f dWdr = c * a * interaction.sep;
+            const Imath::V2f dWdr = c * a * interaction.sep;
 
-        const Imath::V2f f1_pressure = ( p2->mass * ( p1->pressure + p2->pressure ) * dWdr ) / ( 2 * p2->density );
-        const Imath::V2f f2_pressure = ( p1->mass * ( p1->pressure + p2->pressure ) * dWdr ) / ( 2 * p1->density );
+            const Imath::V2f f1_pressure = ( p2->mass * ( p1->pressure + p2->pressure ) * dWdr ) / ( 2 * p2->density );
+            const Imath::V2f f2_pressure = ( p1->mass * ( p1->pressure + p2->pressure ) * dWdr ) / ( 2 * p1->density );
 
-        if ( interaction.i == 0 )
-            m_logStream << interaction.i << " mass " << p2->mass << " pressure1 " << p1->pressure << " pressure2 " << p2->pressure << " dWdr " << dWdr << " p2density " << p2->density << std::endl;
+            if ( interaction.i == 0 )
+                m_logStream << interaction.i << " mass " << p2->mass << " pressure1 " << p1->pressure << " pressure2 " << p2->pressure << " dWdr " << dWdr << " p2density " << p2->density << std::endl;
 
-        p1->force += - f1_pressure;
-        p2->force += f2_pressure;
+            p1->force += - f1_pressure;
+            p2->force += f2_pressure;
 
-        if ( interaction.i == 0 )
-            m_logStream << interaction.i << " press " << f1_pressure << " r " << r << " i.s " << interaction.sep << " j " << interaction.j << std::endl;
+            if ( interaction.i == 0 )
+                m_logStream << interaction.i << " press " << f1_pressure << " r " << r << " i.s " << interaction.sep << " j " << interaction.j << std::endl;
+
+        }
 
         //  Viscosity Calculations
         //
-        const float d2Wdr2 = c * ( 7 * r2 - 3 * d2) * ( r2 - d2 );
+        //  Using viscosity kernel as recommended in literature
+        //
+        const float c = 90.0f / ( 2 * M_PI * d5 );
+        const float d2Wdr2 = c * ( 1 - r / d );
 
         // viscosity of water
         const float mu = 8.94e-4f;
