@@ -26,6 +26,10 @@ public:
     Imath::V2f pos;
     Imath::V2f vel;
     Imath::V2f force;
+
+    Imath::V2f f_pressure;
+    Imath::V2f f_viscosity;
+    Imath::V2f f_external;
 };
 
 

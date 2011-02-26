@@ -45,6 +45,9 @@ void Simulator::step()
 
         // Reset force on the particle
         p1->force = zero;
+        p1->f_pressure = zero;
+        p1->f_viscosity = zero;
+        p1->f_external = zero;
 
         for ( unsigned int j=i+1; j<numParticles; ++j )
         {
@@ -89,6 +92,7 @@ void Simulator::step()
         // Apply external forces
         const Imath::V2f down( 0.0, -1.0 );
         p1->force += down * p1->mass * 9.81f;
+        p1->f_external += down * p1->mass * 9.81f;
 
         /*
         if ( i == 0 )
@@ -131,6 +135,9 @@ void Simulator::step()
             p1->force += - f1_pressure;
             p2->force += f2_pressure;
 
+            p1->f_pressure += f1_pressure;
+            p2->f_pressure += f2_pressure;
+
             //if ( interaction.i == 0 )
                 //m_logStream << interaction.i << " press " << f1_pressure << " r " << r << " i.s " << interaction.sep << " j " << interaction.j << std::endl;
 
@@ -151,6 +158,9 @@ void Simulator::step()
         p1->force += f1_viscosity;
         p2->force += f2_viscosity;
 
+        p1->f_viscosity += f1_viscosity;
+        p2->f_viscosity += f2_viscosity;
+
         //if ( interaction.i == 0 )
             //m_logStream << interaction.i << " vis " << f1_viscosity << std::endl;
     }
@@ -164,7 +174,7 @@ void Simulator::step()
         p->vel += ( p->force / p->mass ) * dt;
         p->pos += p->vel * dt;
 
-        //m_logStream << i << " p " << p->pos << " v " << p->vel << " f " << p->force << " d " << p->density << " pr " << p->pressure << std::endl;
+        m_logStream << i << " p " << p->pos << " v " << p->vel << " f " << p->force << " d " << p->density << " pr " << p->pressure << std::endl;
     }
 }
 
