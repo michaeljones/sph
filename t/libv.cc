@@ -119,6 +119,11 @@ void keyPressed(unsigned char key, int x, int y)
 struct InputData
 {
     int particleCount;
+    float width;
+    float height;
+    float zDepth;
+    float h;
+    float viscosity;
 };
 
 
@@ -186,13 +191,14 @@ bool run( InputData inputData )
 
     BoundaryPtrArray boundaries;
 
-    Imath::V2f min( -0.13f, -0.13f );
-    Imath::V2f max( 0.13f, 0.13f );
+    Imath::V2f min( -inputData.width/2.0f, - inputData.height/2.0f );
+    Imath::V2f max( inputData.width/2.0f, inputData.height/2.0f );
     boundaries.push_back( new ContainerBoundary( max, min, particles ) );
 
     validator = new NanValidator( particles );
-    sim = new Simulator( particles, boundaries, std::cout );
-    display = new Display( particles );
+    Simulator::Settings settings( inputData.h, inputData.viscosity );
+    sim = new Simulator( particles, boundaries, settings, std::cout );
+    display = new Display( particles, inputData.zDepth, inputData.h );
     
     /* Start Event Processing Engine */    
     glutMainLoop();    

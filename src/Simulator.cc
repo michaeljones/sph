@@ -26,18 +26,16 @@ void Simulator::step()
         m_boundaries[i]->resolve();
     }
 
-    const float smoothingDistance = 0.055;
-    const float smoothingDistanceSquared = smoothingDistance * smoothingDistance;
-
     const unsigned int numParticles = m_particles.size();
 
     std::vector< Interaction > interactions;
 
-    const float d = smoothingDistance;
-    const float d2 = d * d;
-    const float d5 = d2 * d2 * d;
-    const float d6 = d5 * d;
-    const float d9 = d6 * d2 * d;
+    const float mu = m_settings.viscosity;
+    const float h = m_settings.h;
+    const float h2 = h * h;
+    const float h5 = h2 * h2 * h;
+    const float h6 = h5 * h;
+    const float h9 = h6 * h2 * h;
 
     const Imath::V2f zero( 0.0f );
 
@@ -47,9 +45,6 @@ void Simulator::step()
 
         // Reset force on the particle
         p1->force = zero;
-
-        // std::cerr << "mpj-debug: p " << p1->pos << std::endl;
-        // std::cerr << "mpj-debug: v " << p1->vel << std::endl;
 
         for ( unsigned int j=i+1; j<numParticles; ++j )
         {
@@ -66,7 +61,7 @@ void Simulator::step()
                 m_logStream << i << " " << j << " " << lengthSquared << " p " << p1->pos << " p2 " << p2->pos << std::endl;
             */
 
-            if ( lengthSquared > smoothingDistanceSquared )
+            if ( lengthSquared > h2 )
                 continue;
 
             //  Calculate Kernel contribution for p1 from p2
@@ -74,9 +69,9 @@ void Simulator::step()
             //  Use poly6 kernel as noted in the siggraph course notes
             //
             const float r2 = lengthSquared;
-            const float a = d2 - r2;
+            const float a = h2 - r2;
             const float a3 = a * a * a;
-            const float W = ( 315.0f * a3 ) / ( 64.0f * M_PI * d9 );
+            const float W = ( 315.0f * a3 ) / ( 64.0f * M_PI * h9 );
 
             interactions.push_back( Interaction( i, j, diff, r2, W ) );
 
@@ -122,22 +117,22 @@ void Simulator::step()
             //
             //  Using Spiky kernel as noted in literature
             //
-            const float c = - ( 45.0f / ( M_PI * d6 ) );
-            const float a = ( ( d2 + r2 ) / r ) - 2 * d;
+            const float c = - ( 45.0f / ( M_PI * h6 ) );
+            const float a = ( ( h2 + r2 ) / r ) - 2 * h;
 
             const Imath::V2f dWdr = c * a * interaction.sep;
 
             const Imath::V2f f1_pressure = ( p2->mass * ( p1->pressure + p2->pressure ) * dWdr ) / ( 2 * p2->density );
             const Imath::V2f f2_pressure = ( p1->mass * ( p1->pressure + p2->pressure ) * dWdr ) / ( 2 * p1->density );
 
-            if ( interaction.i == 0 )
-                m_logStream << interaction.i << " mass " << p2->mass << " pressure1 " << p1->pressure << " pressure2 " << p2->pressure << " dWdr " << dWdr << " p2density " << p2->density << std::endl;
+            // if ( interaction.i == 0 )
+                // m_logStream << interaction.i << " mass " << p2->mass << " pressure1 " << p1->pressure << " pressure2 " << p2->pressure << " dWdr " << dWdr << " p2density " << p2->density << std::endl;
 
             p1->force += - f1_pressure;
             p2->force += f2_pressure;
 
-            if ( interaction.i == 0 )
-                m_logStream << interaction.i << " press " << f1_pressure << " r " << r << " i.s " << interaction.sep << " j " << interaction.j << std::endl;
+            //if ( interaction.i == 0 )
+                //m_logStream << interaction.i << " press " << f1_pressure << " r " << r << " i.s " << interaction.sep << " j " << interaction.j << std::endl;
 
         }
 
@@ -145,11 +140,10 @@ void Simulator::step()
         //
         //  Using viscosity kernel as recommended in literature
         //
-        const float c = 90.0f / ( 2 * M_PI * d5 );
-        const float d2Wdr2 = c * ( 1 - r / d );
+        const float c = 90.0f / ( 2 * M_PI * h5 );
+        const float d2Wdr2 = c * ( 1 - r / h );
 
         // viscosity of water
-        const float mu = 8.94e-4f;
 
         const Imath::V2f f1_viscosity = mu * p2->mass * ( p2->vel - p1->vel ) * d2Wdr2 / ( p2->density );
         const Imath::V2f f2_viscosity = mu * p1->mass * ( p1->vel - p2->vel ) * d2Wdr2 / ( p2->density );
@@ -157,8 +151,8 @@ void Simulator::step()
         p1->force += f1_viscosity;
         p2->force += f2_viscosity;
 
-        if ( interaction.i == 0 )
-            m_logStream << interaction.i << " vis " << f1_viscosity << std::endl;
+        //if ( interaction.i == 0 )
+            //m_logStream << interaction.i << " vis " << f1_viscosity << std::endl;
     }
 
     for ( unsigned int i=0; i<numParticles; ++i )
@@ -170,7 +164,7 @@ void Simulator::step()
         p->vel += ( p->force / p->mass ) * dt;
         p->pos += p->vel * dt;
 
-        m_logStream << i << " p " << p->pos << " v " << p->vel << " f " << p->force << " d " << p->density << " pr " << p->pressure << std::endl;
+        //m_logStream << i << " p " << p->pos << " v " << p->vel << " f " << p->force << " d " << p->density << " pr " << p->pressure << std::endl;
     }
 }
 

@@ -9,8 +9,10 @@ class Display
 {
 public:
 
-    Display( ParticlePtrArray& particles )
-     : m_particles( particles ) {}
+    Display( ParticlePtrArray& particles, float zDepth, float h )
+     : m_zDepth( zDepth ),
+       m_h( h ),
+       m_particles( particles ) {}
 
     void draw()
     {
@@ -19,7 +21,7 @@ public:
         glBegin( GL_POINTS );
         for ( unsigned int i=0; i<numParticles; ++i )
         {
-            glVertex3f( m_particles[i]->pos.x, m_particles[i]->pos.y, -0.5f );
+            glVertex3f( m_particles[i]->pos.x, m_particles[i]->pos.y, m_zDepth );
         }
         glEnd();
 
@@ -36,6 +38,9 @@ public:
     }
 
 private:
+
+    const float m_zDepth;
+    const float m_h;
 
     ParticlePtrArray& m_particles;
 };
