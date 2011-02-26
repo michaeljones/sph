@@ -116,10 +116,21 @@ void keyPressed(unsigned char key, int x, int y)
     }
 }
 
-int main(int argc, char **argv) 
+struct InputData
+{
+    int particleCount;
+};
+
+
+extern "C" {
+
+
+bool run( InputData inputData )
 {    
     /* Initialize GLUT state - glut will take any command line arguments that pertain to it or 
          X Windows - look at its documentation at http://reality.sgi.com/mjk/spec3/spec3.html */    
+    int argc = 0;
+    char **argv = NULL;
     glutInit(&argc, argv);    
 
     /* Select type of Display mode:     
@@ -162,7 +173,7 @@ int main(int argc, char **argv)
 
     srand48( 0 );
 
-    const unsigned particleCount = 10;
+    const unsigned particleCount = inputData.particleCount;
     ParticlePtrArray particles( particleCount );
 
     // Fill particle array
@@ -195,7 +206,9 @@ int main(int argc, char **argv)
 
     std::cout << "Finished." << std::endl;
 
-    return 0;
+    return true;
+}
+
 }
 
 

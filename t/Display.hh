@@ -23,6 +23,7 @@ public:
         }
         glEnd();
 
+        /*
         glBegin( GL_LINES );
         for ( unsigned int i=0; i<numParticles; ++i )
         {
@@ -31,6 +32,7 @@ public:
             glVertex3f( p->pos.x + p->force.x/100.0f, p->pos.y + p->force.y/100.0f, -0.5f );
         }
         glEnd();
+        */
     }
 
 private:

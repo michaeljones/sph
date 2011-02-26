@@ -1,5 +1,6 @@
 
-export LD_LIBRARY_PATH=${0%viewer}../lib
+export LD_LIBRARY_PATH=${0%viewer}../lib:${0%viewer}
 
-$0-bin
+# $0-bin
+python $0.py
 
