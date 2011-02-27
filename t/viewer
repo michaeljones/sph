@@ -1,6 +1,11 @@
+#!/bin/bash
 
 export LD_LIBRARY_PATH=${0%viewer}../lib:${0%viewer}
 
-# $0-bin
-python $0.py
+if [ "$1" == "-d" ]; then
+    gdb --args python $0.py
+else
+    python $0.py
+fi
+
 
