@@ -8,7 +8,7 @@ data = InputData(
         height=5.4,
         zDepth=-9.0,
         h=0.1,
-        viscosity=4.94e-2,
+        viscosity=8.94e-2,
         logfile="log.log",
         )
 

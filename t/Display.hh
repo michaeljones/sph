@@ -25,7 +25,7 @@ public:
         }
         glEnd();
 
-        const float fs = 0.1;
+        const float fs = 0.5;
 
         glBegin( GL_LINES );
         glColor3f( 1.0f, 0.0f, 0.0f );
