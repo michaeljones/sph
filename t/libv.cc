@@ -17,6 +17,7 @@
 #include <unistd.h>
 
 #include <iostream>
+#include <fstream>
 
 #include <cmath>
 
@@ -124,6 +125,7 @@ struct InputData
     float zDepth;
     float h;
     float viscosity;
+    const char* logfile;
 };
 
 
@@ -195,9 +197,19 @@ bool run( InputData inputData )
     Imath::V2f max( inputData.width/2.0f, inputData.height/2.0f );
     boundaries.push_back( new ContainerBoundary( max, min, particles ) );
 
+    std::ostream* logStream = NULL;
+    std::ofstream fileStream( inputData.logfile );
+    logStream = &fileStream;
+
+    if ( ! fileStream.is_open() )
+    {
+        logStream = &std::cout;
+        *logStream << "Failed to open file: " << inputData.logfile << std::endl;
+    }
+
     validator = new NanValidator( particles );
     Simulator::Settings settings( inputData.h, inputData.viscosity );
-    sim = new Simulator( particles, boundaries, settings, std::cout );
+    sim = new Simulator( particles, boundaries, settings, *logStream );
     display = new Display( particles, inputData.zDepth, inputData.h );
     
     /* Start Event Processing Engine */    

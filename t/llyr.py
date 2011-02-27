@@ -10,6 +10,7 @@ class InputData( Structure ):
             ( "zDepth", c_float ),
             ( "h", c_float ),
             ( "viscosity", c_float ),
+            ( "logfile", c_char_p ),
             ]
 
 def run( data ):
