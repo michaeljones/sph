@@ -30,6 +30,7 @@ void Simulator::step()
 
     std::vector< Interaction > interactions;
 
+    const float gravity = m_settings.gravity;
     const float mu = m_settings.viscosity;
     const float h = m_settings.h;
     const float h2 = h * h;
@@ -91,8 +92,8 @@ void Simulator::step()
 
         // Apply external forces
         const Imath::V2f down( 0.0, -1.0 );
-        p1->force += down * p1->mass * 9.81f;
-        p1->f_external += down * p1->mass * 9.81f;
+        p1->force += down * p1->mass * gravity;
+        p1->f_external += down * p1->mass * gravity;
 
         /*
         if ( i == 0 )

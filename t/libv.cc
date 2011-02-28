@@ -125,6 +125,7 @@ struct InputData
     float zDepth;
     float h;
     float viscosity;
+    float gravity;
     const char* logfile;
 };
 
@@ -208,7 +209,7 @@ bool run( InputData inputData )
     }
 
     validator = new NanValidator( particles );
-    Simulator::Settings settings( inputData.h, inputData.viscosity );
+    Simulator::Settings settings( inputData.h, inputData.viscosity, inputData.gravity );
     sim = new Simulator( particles, boundaries, settings, *logStream );
     display = new Display( particles, inputData.zDepth, inputData.h );
     

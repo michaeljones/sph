@@ -14,15 +14,19 @@ public:
     {
         Settings(
                 float _h,
-                float _viscosity
+                float _viscosity,
+                float _gravity
                 )
          : h( _h ),
-           viscosity( _viscosity )
+           viscosity( _viscosity ),
+           gravity( _gravity )
            {}
 
         float h;
         float viscosity;
+        float gravity;
     };
+
 
     Simulator(
             ParticlePtrArray& particles,
