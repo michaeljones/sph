@@ -1,5 +1,5 @@
 
-DEPS=`cpp -MM libv.cc -I/home/mike/projects/tools/include/OpenEXR | sed 's/.*.o: //g' | sed 's/\\\//g'`
+DEPS=`cpp -MM libv.cc -I../src -I/home/mike/projects/tools/include/OpenEXR | sed 's/.*.o: //g' | sed 's/\\\//g'`
 
 redo-ifchange $DEPS
 
