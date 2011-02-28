@@ -3,6 +3,7 @@
 #include <Particle.hh>
 #include <Simulator.hh>
 #include <Boundary.hh>
+#include <Emitter.hh>
 
 // Helper includes
 #include "Display.hh"
@@ -179,8 +180,10 @@ bool run( InputData inputData )
 
     std::cout << "Initialising Llyr" << std::endl;
 
-    srand48( 0 );
+    srand48( 1 );
 
+    //  Particles
+    //
     const unsigned particleCount = inputData.particleCount;
     ParticlePtrArray particles( particleCount );
 
@@ -192,12 +195,22 @@ bool run( InputData inputData )
         particles[i] = new Particle( Imath::V2f( x, y ) );
     }
 
+    //  Boundaries
+    //
     BoundaryPtrArray boundaries;
 
     Imath::V2f min( -inputData.width/2.0f, - inputData.height/2.0f );
     Imath::V2f max( inputData.width/2.0f, inputData.height/2.0f );
     boundaries.push_back( new ContainerBoundary( max, min, particles ) );
 
+    //  Emitters
+    //  
+    EmitterPtrArray emitters;
+
+    emitters.push_back( new PointEmitter( Imath::V2f( 0.0f, 0.0f ), particles ) );
+
+    //  Log file
+    //
     std::ostream* logStream = NULL;
     std::ofstream fileStream( inputData.logfile );
     logStream = &fileStream;
@@ -210,7 +223,7 @@ bool run( InputData inputData )
 
     validator = new NanValidator( particles );
     Simulator::Settings settings( inputData.h, inputData.viscosity, inputData.gravity );
-    sim = new Simulator( particles, boundaries, settings, *logStream );
+    sim = new Simulator( particles, boundaries, emitters, settings, *logStream );
     display = new Display( particles, inputData.zDepth, inputData.h );
     
     /* Start Event Processing Engine */    

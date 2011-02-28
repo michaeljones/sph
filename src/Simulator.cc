@@ -20,6 +20,12 @@ public:
 
 void Simulator::step()
 {
+    const unsigned int numEmitters = m_emitters.size();
+    for ( unsigned int i=0; i<numEmitters; ++i )
+    {
+        m_emitters[i]->emit();
+    }
+
     const unsigned int numBoundaries = m_boundaries.size();
     for ( unsigned int i=0; i<numBoundaries; ++i )
     {
