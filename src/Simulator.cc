@@ -160,7 +160,7 @@ void Simulator::step()
         // viscosity of water
 
         const Imath::V2f f1_viscosity = mu * p2->mass * ( p2->vel - p1->vel ) * d2Wdr2 / ( p2->density );
-        const Imath::V2f f2_viscosity = mu * p1->mass * ( p1->vel - p2->vel ) * d2Wdr2 / ( p2->density );
+        const Imath::V2f f2_viscosity = mu * p1->mass * ( p1->vel - p2->vel ) * d2Wdr2 / ( p1->density );
 
         p1->force += f1_viscosity;
         p2->force += f2_viscosity;
