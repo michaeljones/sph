@@ -118,11 +118,23 @@ void keyPressed(unsigned char key, int x, int y)
     }
 }
 
+struct Point
+{
+    float x;
+    float y;
+};
+
+struct Region
+{
+    Point min;
+    Point max;
+};
+
 struct InputData
 {
     int particleCount;
-    float width;
-    float height;
+    Region container;
+    Region particles;
     float zDepth;
     float h;
     float viscosity;
@@ -184,30 +196,41 @@ bool run( InputData inputData )
 
     //  Particles
     //
-    const unsigned particleCount = inputData.particleCount;
-    ParticlePtrArray particles( particleCount );
+    // const unsigned particleCount = inputData.particleCount;
+    ParticlePtrArray particles;
 
     // Fill particle array
-    for ( unsigned int i=0; i<particleCount; ++i )
+    float x = inputData.particles.min.x, y = inputData.particles.min.y;
+    float h = inputData.h;
+    unsigned int row = 0;
+    float scale = 1.1f;
+    while ( y < inputData.particles.max.y )
     {
-        float x = ( drand48() - 0.5 ) * 0.125f;
-        float y = ( drand48() - 0.5 ) * 0.125f;
-        particles[i] = new Particle( Imath::V2f( x, y ) );
+        x = row % 2 ? inputData.particles.min.x : inputData.particles.min.x + ( h * 0.5 * scale );
+
+        while ( x < inputData.particles.max.x )
+        {
+            particles.push_back( new Particle( Imath::V2f( x, y ) ) );
+            x += h * scale;
+        }
+
+        y += h * sin( M_PI / 3.0 ) * scale;
+        row += 1;
     }
 
     //  Boundaries
     //
     BoundaryPtrArray boundaries;
 
-    Imath::V2f min( -inputData.width/2.0f, - inputData.height/2.0f );
-    Imath::V2f max( inputData.width/2.0f, inputData.height/2.0f );
+    Imath::V2f min( inputData.container.min.x, inputData.container.min.y );
+    Imath::V2f max( inputData.container.max.x, inputData.container.max.y );
     boundaries.push_back( new ContainerBoundary( max, min, particles ) );
 
     //  Emitters
     //  
     EmitterPtrArray emitters;
 
-    emitters.push_back( new PointEmitter( Imath::V2f( 0.0f, 0.0f ), particles ) );
+    // emitters.push_back( new PointEmitter( Imath::V2f( 0.0f, 0.0f ), particles ) );
 
     //  Log file
     //
