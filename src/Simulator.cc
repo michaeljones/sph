@@ -20,6 +20,8 @@ public:
 
 void Simulator::step()
 {
+    m_logStream << "Frame " << m_frame++ << " --------------------------------------" << std::endl;
+
     const unsigned int numEmitters = m_emitters.size();
     for ( unsigned int i=0; i<numEmitters; ++i )
     {
@@ -181,7 +183,8 @@ void Simulator::step()
         p->vel += ( p->force / p->mass ) * dt;
         p->pos += p->vel * dt;
 
-        m_logStream << i << " p " << p->pos << " v " << p->vel << " f " << p->force << " d " << p->density << " pr " << p->pressure << std::endl;
+        m_logStream << i << " p " << p->pos << " v " << p->vel << " f " << p->force << " ( " << p->f_pressure << ", " << p->f_viscosity << ", " << p->f_external << " ) " << " d " << p->density << " pr " << p->pressure << std::endl;
     }
+
 }
 

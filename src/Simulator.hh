@@ -36,7 +36,8 @@ public:
             Settings& settings,
             std::ostream& logStream
             )
-     : m_particles( particles ),
+     : m_frame( 0 ),
+       m_particles( particles ),
        m_boundaries( boundaries ),
        m_emitters( emitters ),
        m_settings( settings ),
@@ -45,6 +46,8 @@ public:
     void step();
 
 private:
+
+    unsigned int m_frame;
 
     ParticlePtrArray& m_particles;
     BoundaryPtrArray& m_boundaries;
