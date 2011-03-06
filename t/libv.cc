@@ -203,14 +203,19 @@ bool run( InputData inputData )
     float x = inputData.particles.min.x, y = inputData.particles.min.y;
     float h = inputData.h;
     unsigned int row = 0;
-    float scale = 1.1f;
+    float jitter = 0.1;
+    float scale = 1.0f + 2 * jitter;
     while ( y < inputData.particles.max.y )
     {
         x = row % 2 ? inputData.particles.min.x : inputData.particles.min.x + ( h * 0.5 * scale );
 
         while ( x < inputData.particles.max.x )
         {
-            particles.push_back( new Particle( Imath::V2f( x, y ) ) );
+            float xsign = drand48() > 0.5 ? 0.5f : -0.5f;
+            float ysign = drand48() > 0.5 ? 0.5f : -0.5f;
+            float px = x + ( jitter * ( xsign * h ) );
+            float py = y + ( jitter * ( ysign * h ) );
+            particles.push_back( new Particle( Imath::V2f( px, py ) ) );
             x += h * scale;
         }
 
