@@ -7,15 +7,14 @@ class Interaction
 {
 public:
 
-    Interaction( unsigned _i, unsigned _j, Imath::V2f& _sep, float _r2, float _W )
-     : i( _i ), j( _j ), sep( _sep ), r2( _r2 ), W( _W ) {}
+    Interaction( unsigned _i, unsigned _j, Imath::V2f& _sep, float _r2 )
+     : i( _i ), j( _j ), sep( _sep ), r2( _r2 ) {}
 
 public:
 
     unsigned i, j;
     Imath::V2f sep;
     float r2;
-    float W;
 };
 
 void Simulator::step()
@@ -85,7 +84,7 @@ void Simulator::step()
             const float a3 = a * a * a;
             const float W = ( 315.0f * a3 ) / ( 64.0f * M_PI * h9 );
 
-            interactions.push_back( Interaction( i, j, diff, r2, W ) );
+            interactions.push_back( Interaction( i, j, diff, r2 ) );
 
             //  Calculate density for each particle
             //
