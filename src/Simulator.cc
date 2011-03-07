@@ -41,6 +41,7 @@ void Simulator::step()
     const float mu = m_settings.viscosity;
     const float h = m_settings.h;
     const float h2 = h * h;
+    const float h3 = h2 * h;
     const float h5 = h2 * h2 * h;
     const float h6 = h5 * h;
     const float h9 = h6 * h2 * h;
@@ -91,6 +92,12 @@ void Simulator::step()
             p1->density += W * p2->mass;
             p2->density += W * p1->mass;
         }
+
+        // Account for the mass of the particle itself
+        const float a = h2;
+        const float a3 = h6;
+        const float W = 315.0f / ( 64.0f * M_PI * h3 );
+        p1->density += W * p1->mass;
 
         // Calculate pressure based on density
         const float k = 0.5f;
