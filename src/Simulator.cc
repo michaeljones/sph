@@ -182,7 +182,7 @@ void Simulator::step()
 
     for ( unsigned int i=0; i<numParticles; ++i )
     {
-        const float dt = 1.0f / 24000.0f;
+        const float dt = 1.0f / 4800.0f;
 
         Particle* p = m_particles[ i ];
 
