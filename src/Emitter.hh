@@ -10,14 +10,14 @@ class Emitter
 {
 public:
 
-    Emitter( ParticlePtrArray& particles )
+    Emitter( ParticleData& particles )
      : m_particles( particles ) {}
 
     virtual void emit() const = 0;
 
 protected:
 
-    ParticlePtrArray& m_particles;
+    ParticleData& m_particles;
 
 };
 
@@ -25,7 +25,7 @@ class PointEmitter : public Emitter
 {
 public:
 
-    PointEmitter( Imath::V2f pos, ParticlePtrArray& particles )
+    PointEmitter( Imath::V2f pos, ParticleData& particles )
      : Emitter( particles ),
        m_counter( 0 ),
        m_pos( pos ) {}
@@ -34,12 +34,14 @@ public:
     {
         if ( ! ( m_counter % 500 ) )
         {
+            /*
             float x = 0;
             float y = 2.4;
 
             Particle* p = new Particle( Imath::V2f( m_pos.x + x, m_pos.y + y ) );
             p->vel = Imath::V2f( 2 * ( drand48() - 0.5 ), 2 * ( drand48() - 0.5 ) );
             m_particles.push_back( p );
+            */
         }
         ++m_counter;
     }

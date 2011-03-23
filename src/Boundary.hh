@@ -9,14 +9,14 @@ class Boundary
 {
 public:
 
-    Boundary( ParticlePtrArray& particles )
+    Boundary( ParticleData& particles )
      : m_particles( particles ) {}
 
     virtual void resolve() = 0;
 
 protected:
 
-    ParticlePtrArray& m_particles;
+    ParticleData& m_particles;
 };
 
 
@@ -24,18 +24,19 @@ class PlaneBoundary : public Boundary
 {
 public:
 
-    PlaneBoundary( Imath::V2f& pos, Imath::V2f& normal, ParticlePtrArray& particles )
+    PlaneBoundary( Imath::V2f& pos, Imath::V2f& normal, ParticleData& particles )
      : Boundary( particles ),
        m_pos( pos ),
        m_normal( normal) {}
 
     void resolve()
     {
-        unsigned int numParticles = m_particles.size();
+        unsigned int numParticles = m_particles.position.size();
         for ( unsigned int i=0; i<numParticles; ++i )
         {
-            Particle* p = m_particles[i];
-            const Imath::V2f diff = p->pos - m_pos;
+            VectorArray& pos = m_particles.position;
+            VectorArray& vel = m_particles.velocity;
+            const Imath::V2f diff = pos[i] - m_pos;
             const float dotProduct = m_normal.dot( diff );
 
             if ( dotProduct > 0.0f )
@@ -44,10 +45,10 @@ public:
             }
 
             // Correct position
-            p->pos -= m_normal * dotProduct;
+            pos[i] -= m_normal * dotProduct;
 
-            const float velDot = m_normal.dot( p->vel );
-            p->vel -= 2.0f * velDot * m_normal;
+            const float velDot = m_normal.dot( vel[i] );
+            vel[i] -= 2.0f * velDot * m_normal;
         }
     }
 
@@ -62,7 +63,7 @@ class ContainerBoundary : public Boundary
 {
 public:
 
-    ContainerBoundary( Imath::V2f& max, Imath::V2f& min, ParticlePtrArray& particles )
+    ContainerBoundary( Imath::V2f& max, Imath::V2f& min, ParticleData& particles )
      : Boundary( particles ),
        m_max( max ),
        m_min( min) {}
@@ -70,30 +71,31 @@ public:
 
     void resolve()
     {
-        unsigned int numParticles = m_particles.size();
+        unsigned int numParticles = m_particles.position.size();
         for ( unsigned int i=0; i<numParticles; ++i )
         {
-            Particle* p = m_particles[i];
+            VectorArray& pos = m_particles.position;
+            VectorArray& vel = m_particles.velocity;
 
             // Bottom
-            resolveSide( p, m_min, Imath::V2f( 0.0f, 1.0f ) );
+            resolveSide( pos[i], vel[i], m_min, Imath::V2f( 0.0f, 1.0f ) );
             
             // Left
-            resolveSide( p, m_min, Imath::V2f( 1.0f, 0.0f ) );
+            resolveSide( pos[i], vel[i], m_min, Imath::V2f( 1.0f, 0.0f ) );
 
             // Top
-            resolveSide( p, m_max, Imath::V2f( 0.0f, -1.0f ) );
+            resolveSide( pos[i], vel[i], m_max, Imath::V2f( 0.0f, -1.0f ) );
 
             // Right
-            resolveSide( p, m_max, Imath::V2f( -1.0f, 0.0f ) );
+            resolveSide( pos[i], vel[i], m_max, Imath::V2f( -1.0f, 0.0f ) );
         }
     }
 
 private:
 
-    void resolveSide( Particle* p, Imath::V2f pos, Imath::V2f normal )
+    void resolveSide( Imath::V2f& pos, Imath::V2f& vel, Imath::V2f boundaryPos, Imath::V2f normal )
     {
-        const Imath::V2f diff = p->pos - pos;
+        const Imath::V2f diff = pos - boundaryPos;
         const float dotProduct = normal.dot( diff );
 
         if ( dotProduct > 0.0f )
@@ -102,11 +104,11 @@ private:
         }
 
         // Correct position
-        p->pos -= normal * dotProduct;
+        pos -= normal * dotProduct;
 
         // Reflect velocity
-        const float velDot = normal.dot( p->vel );
-        p->vel -= 2.0f * velDot * normal;
+        const float velDot = normal.dot( vel );
+        vel -= 2.0f * velDot * normal;
     }
 
     const Imath::V2f m_max;

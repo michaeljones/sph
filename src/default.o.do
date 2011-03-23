@@ -4,5 +4,5 @@ DEPS=`cpp -MM $1.cc -I/home/mike/projects/tools/include/OpenEXR | sed 's/.*.o: /
 
 redo-ifchange $DEPS
 
-g++ -g -fPIC -c -o $3 $1.cc -I/home/mike/projects/tools/include/OpenEXR
+g++ -g -fPIC -Wall -c -o $3 $1.cc -I/home/mike/projects/tools/include/OpenEXR
 

@@ -16,18 +16,18 @@ class NanValidator : public Validator
 {
 public:
 
-    NanValidator( ParticlePtrArray& particles )
+    NanValidator( ParticleData& particles )
      : m_particles( particles ) {}
 
     bool valid()
     {
-        unsigned int numParticles = m_particles.size();
+        unsigned int numParticles = m_particles.position.size();
         for ( unsigned int i=0; i<numParticles; ++i )
         {
-            Particle* p = m_particles[i];
+            Imath::V2f& pos = m_particles.position[ i ];
 
             // Check for nans with self equalilty fail
-            if ( p->pos != p->pos )
+            if ( pos != pos )
                 return false;
         }
 
@@ -36,7 +36,7 @@ public:
 
 private:
 
-    ParticlePtrArray& m_particles;
+    ParticleData& m_particles;
 };
 
 #endif // VALIDATOR_HH

@@ -4,6 +4,8 @@
 #include <Simulator.hh>
 #include <Boundary.hh>
 #include <Emitter.hh>
+#include <Stepper.hh>
+#include <ForceEvaluator.hh>
 
 // Helper includes
 #include "Display.hh"
@@ -19,7 +21,7 @@
 
 #include <iostream>
 #include <fstream>
-
+#include <memory>
 #include <cmath>
 
 #define ESCAPE 27
@@ -44,6 +46,9 @@ int window;
 Simulator* sim = NULL;
 Display* display = NULL;
 Validator* validator = NULL;
+
+const float timeStep = 1.0f / 4800.0f;
+unsigned int frame = 0;
 
 void InitGL(int Width, int Height)
 {
@@ -84,7 +89,7 @@ void DrawGLScene()
     glLoadIdentity();                // Reset The View
 
     // Step the simulation forward
-    sim->step();
+    sim->step( frame++, timeStep );
 
     if ( ! validator->valid() )
     {
@@ -197,7 +202,10 @@ bool run( InputData inputData )
     //  Particles
     //
     // const unsigned particleCount = inputData.particleCount;
-    ParticlePtrArray particles;
+    std::auto_ptr< VectorArray > position( new VectorArray );
+    std::auto_ptr< VectorArray > velocity( new VectorArray );
+    std::auto_ptr< FloatArray > mass( new FloatArray );
+    ParticleData particles( *position, *velocity, *mass );
 
     // Fill particle array
     float x = inputData.particles.min.x, y = inputData.particles.min.y;
@@ -215,7 +223,9 @@ bool run( InputData inputData )
             float ysign = drand48() > 0.5 ? 0.5f : -0.5f;
             float px = x + ( jitter * ( xsign * h ) );
             float py = y + ( jitter * ( ysign * h ) );
-            particles.push_back( new Particle( Imath::V2f( px, py ) ) );
+            particles.position.push_back( Imath::V2f( px, py ) );
+            particles.velocity.push_back( Imath::V2f( 0.0f, 0.0f ) );
+            particles.mass.push_back( 1.0f );
             x += h * scale;
         }
 
@@ -226,7 +236,6 @@ bool run( InputData inputData )
     //  Boundaries
     //
     BoundaryPtrArray boundaries;
-
     Imath::V2f min( inputData.container.min.x, inputData.container.min.y );
     Imath::V2f max( inputData.container.max.x, inputData.container.max.y );
     boundaries.push_back( new ContainerBoundary( max, min, particles ) );
@@ -250,10 +259,18 @@ bool run( InputData inputData )
     }
 
     validator = new NanValidator( particles );
-    Simulator::Settings settings( inputData.h, inputData.viscosity, inputData.gravity );
-    sim = new Simulator( particles, boundaries, emitters, settings, *logStream );
     display = new Display( particles, inputData.zDepth, inputData.h );
-    
+
+    Simulator::Settings settings( inputData.h, inputData.viscosity, inputData.gravity );
+
+    Stepper stepper;
+    ForceEvaluator forceEvaluator( 
+            inputData.h,
+            inputData.viscosity,
+            inputData.gravity
+            );
+    sim = new Simulator( stepper, forceEvaluator, particles, boundaries, emitters, settings, *logStream );
+
     /* Start Event Processing Engine */    
     glutMainLoop();    
 
@@ -261,7 +278,6 @@ bool run( InputData inputData )
     delete sim;
     delete display;
 
-    std::for_each( particles.begin(), particles.end(), deleter<Particle>() );
     std::for_each( boundaries.begin(), boundaries.end(), deleter<Boundary>() );
 
     std::cout << "Finished." << std::endl;

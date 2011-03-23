@@ -7,6 +7,9 @@
 
 #include <ImathVec.h>
 
+class Stepper;
+class ForceEvaluator;
+
 class Simulator
 {
 public:
@@ -28,28 +31,34 @@ public:
         float gravity;
     };
 
-
     Simulator(
-            ParticlePtrArray& particles,
+            Stepper& stepper,
+            ForceEvaluator& forceEvaluator,
+            ParticleData& particles,
             BoundaryPtrArray& boundaries,
             EmitterPtrArray& emitters,
             Settings& settings,
             std::ostream& logStream
             )
-     : m_frame( 0 ),
+     : m_stepper( stepper ),
+       m_forceEvaluator( forceEvaluator ),
        m_particles( particles ),
        m_boundaries( boundaries ),
        m_emitters( emitters ),
        m_settings( settings ),
        m_logStream( logStream ) {}
 
-    void step();
+    virtual ~Simulator() {}
+
+    void step( unsigned int frame, float timeStep );
 
 private:
 
-    unsigned int m_frame;
+    Stepper& m_stepper;
 
-    ParticlePtrArray& m_particles;
+    ForceEvaluator& m_forceEvaluator;
+
+    ParticleData& m_particles;
     BoundaryPtrArray& m_boundaries;
     EmitterPtrArray& m_emitters;
 

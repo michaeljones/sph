@@ -9,22 +9,23 @@ class Display
 {
 public:
 
-    Display( ParticlePtrArray& particles, float zDepth, float h )
+    Display( ParticleData& particles, float zDepth, float h )
      : m_zDepth( zDepth ),
        m_h( h ),
        m_particles( particles ) {}
 
     void draw()
     {
-        unsigned int numParticles = m_particles.size();
+        unsigned int numParticles = m_particles.position.size();
     
         glBegin( GL_POINTS );
         for ( unsigned int i=0; i<numParticles; ++i )
         {
-            glVertex3f( m_particles[i]->pos.x, m_particles[i]->pos.y, m_zDepth );
+            glVertex3f( m_particles.position[i].x, m_particles.position[i].y, m_zDepth );
         }
         glEnd();
 
+        /*
         const float fs = 0.5;
 
         glBegin( GL_LINES );
@@ -56,6 +57,7 @@ public:
             glVertex3f( p->pos.x + p->f_external.x * fs, p->pos.y + p->f_external.y * fs, m_zDepth );
         }
         glEnd();
+        */
     }
 
 private:
@@ -63,7 +65,7 @@ private:
     const float m_zDepth;
     const float m_h;
 
-    ParticlePtrArray& m_particles;
+    ParticleData& m_particles;
 };
 
 #endif // DISPLAY_HH
