@@ -14,30 +14,12 @@ class Simulator
 {
 public:
 
-    struct Settings
-    {
-        Settings(
-                float _h,
-                float _viscosity,
-                float _gravity
-                )
-         : h( _h ),
-           viscosity( _viscosity ),
-           gravity( _gravity )
-           {}
-
-        float h;
-        float viscosity;
-        float gravity;
-    };
-
     Simulator(
             Stepper& stepper,
             ForceEvaluator& forceEvaluator,
             ParticleData& particles,
             BoundaryPtrArray& boundaries,
             EmitterPtrArray& emitters,
-            Settings& settings,
             std::ostream& logStream
             )
      : m_stepper( stepper ),
@@ -45,7 +27,6 @@ public:
        m_particles( particles ),
        m_boundaries( boundaries ),
        m_emitters( emitters ),
-       m_settings( settings ),
        m_logStream( logStream ) {}
 
     virtual ~Simulator() {}
@@ -61,8 +42,6 @@ private:
     ParticleData& m_particles;
     BoundaryPtrArray& m_boundaries;
     EmitterPtrArray& m_emitters;
-
-    Settings& m_settings;
 
     std::ostream& m_logStream;
 };

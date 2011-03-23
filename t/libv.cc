@@ -261,15 +261,13 @@ bool run( InputData inputData )
     validator = new NanValidator( particles );
     display = new Display( particles, inputData.zDepth, inputData.h );
 
-    Simulator::Settings settings( inputData.h, inputData.viscosity, inputData.gravity );
-
     Stepper stepper;
     ForceEvaluator forceEvaluator( 
             inputData.h,
             inputData.viscosity,
             inputData.gravity
             );
-    sim = new Simulator( stepper, forceEvaluator, particles, boundaries, emitters, settings, *logStream );
+    sim = new Simulator( stepper, forceEvaluator, particles, boundaries, emitters, *logStream );
 
     /* Start Event Processing Engine */    
     glutMainLoop();    
