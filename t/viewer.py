@@ -6,6 +6,7 @@ import sys
 
 def basic_block():
 
+    print "Basic Block"
     data = InputData(
             particleCount=200,
             container=Region( min=Point( -2.5, -2.5 ), max=Point( 2.5, 2.5 ) ),
@@ -22,6 +23,7 @@ def basic_block():
 
 def left_block():
 
+    print "Left Block"
     data = InputData(
             particleCount=200,
             container=Region( min=Point( -2.5, -2.5 ), max=Point( 2.5, 2.5 ) ),
@@ -36,11 +38,29 @@ def left_block():
     run( data )
 
 
+def high_grav_block():
+
+    print "High Grav"
+    data = InputData(
+            particleCount=200,
+            container=Region( min=Point( -2.5, -2.5 ), max=Point( 2.5, 2.5 ) ),
+            particles=Region( min=Point( -2.4, -1.4 ), max=Point( -1.0, 2.4 ) ),
+            zDepth=-9.0,
+            h=0.1,
+            viscosity=12.94e-2,
+            logfile="log.log",
+            gravity=1000.81
+            )
+
+    run( data )
+
+
 def main( argv ):
 
     runs = [
             basic_block,
-            left_block
+            high_grav_block,
+            left_block,
             ]
     
     try:
