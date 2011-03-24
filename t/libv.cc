@@ -137,9 +137,9 @@ struct Region
 
 struct InputData
 {
-    int particleCount;
     Region container;
-    Region particles;
+    int numParticleRegions;
+    Region* particleRegions;
     float zDepth;
     float h;
     float viscosity;
@@ -201,36 +201,39 @@ bool run( InputData inputData )
 
     //  Particles
     //
-    // const unsigned particleCount = inputData.particleCount;
     std::auto_ptr< VectorArray > position( new VectorArray );
     std::auto_ptr< VectorArray > velocity( new VectorArray );
     std::auto_ptr< FloatArray > mass( new FloatArray );
     ParticleData particles( *position, *velocity, *mass );
 
     // Fill particle array
-    float x = inputData.particles.min.x, y = inputData.particles.min.y;
-    float h = inputData.h;
-    unsigned int row = 0;
-    float jitter = 0.1;
-    float scale = 1.0f + 2 * jitter;
-    while ( y < inputData.particles.max.y )
+    for ( unsigned int i=0; i < inputData.numParticleRegions; ++i )
     {
-        x = row % 2 ? inputData.particles.min.x : inputData.particles.min.x + ( h * 0.5 * scale );
+        float x = inputData.particleRegions[i].min.x, y = inputData.particleRegions[i].min.y;
+        float h = inputData.h;
+        unsigned int row = 0;
+        float jitter = 0.1;
+        float scale = 1.0f + 2 * jitter;
 
-        while ( x < inputData.particles.max.x )
+        while ( y < inputData.particleRegions[i].max.y )
         {
-            float xsign = drand48() > 0.5 ? 0.5f : -0.5f;
-            float ysign = drand48() > 0.5 ? 0.5f : -0.5f;
-            float px = x + ( jitter * ( xsign * h ) );
-            float py = y + ( jitter * ( ysign * h ) );
-            particles.position.push_back( Imath::V2f( px, py ) );
-            particles.velocity.push_back( Imath::V2f( 0.0f, 0.0f ) );
-            particles.mass.push_back( 1.0f );
-            x += h * scale;
-        }
+            x = row % 2 ? inputData.particleRegions[i].min.x : inputData.particleRegions[i].min.x + ( h * 0.5 * scale );
 
-        y += h * sin( M_PI / 3.0 ) * scale;
-        row += 1;
+            while ( x < inputData.particleRegions[i].max.x )
+            {
+                float xsign = drand48() > 0.5 ? 0.5f : -0.5f;
+                float ysign = drand48() > 0.5 ? 0.5f : -0.5f;
+                float px = x + ( jitter * ( xsign * h ) );
+                float py = y + ( jitter * ( ysign * h ) );
+                particles.position.push_back( Imath::V2f( px, py ) );
+                particles.velocity.push_back( Imath::V2f( 0.0f, 0.0f ) );
+                particles.mass.push_back( 1.0f );
+                x += h * scale;
+            }
+
+            y += h * sin( M_PI / 3.0 ) * scale;
+            row += 1;
+        }
     }
 
     //  Boundaries
