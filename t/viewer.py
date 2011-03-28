@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from llyr import Region, Point, run, create
+from optparse import OptionParser
 
 import ctypes
 import sys
@@ -76,6 +77,11 @@ def two_blocks():
 
 def main( argv ):
 
+    parser = OptionParser()
+    parser.add_option( "-d", "--debug", action="store_true", default=False, help="Run in debug mode" )
+
+    opts, args = parser.parse_args( argv )
+
     runs = [
             basic_block,
             high_grav_block,
@@ -84,7 +90,7 @@ def main( argv ):
             ]
     
     try:
-        index = int( argv[ 1 ] )
+        index = int( args[ 1 ] )
     except IndexError:
         index = len( runs ) - 1 
 
