@@ -3,5 +3,5 @@ DEPS=`cpp -MM libv.cc -I../src -I/home/mike/projects/tools/include/OpenEXR | sed
 
 redo-ifchange $DEPS
 
-g++ -shared -fPIC -g -o $3 libv.cc -I../src -I/home/mike/projects/tools/include/OpenEXR -L../lib -lllyr -lglut -lGL -lGLU
+g++ -shared -fPIC -Wall -g -o $3 libv.cc -I../src -I/home/mike/projects/tools/include/OpenEXR -L../lib -lllyr -lglut -lGL -lGLU
 

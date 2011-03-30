@@ -12,7 +12,7 @@ public:
     Boundary( ParticleData& particles )
      : m_particles( particles ) {}
 
-    virtual void resolve() = 0;
+    virtual void resolve( float timeStep ) = 0;
 
 protected:
 
@@ -29,7 +29,7 @@ public:
        m_pos( pos ),
        m_normal( normal) {}
 
-    void resolve()
+    void resolve( float timeStep )
     {
         unsigned int numParticles = m_particles.position.size();
         for ( unsigned int i=0; i<numParticles; ++i )
@@ -69,7 +69,7 @@ public:
        m_min( min) {}
        
 
-    void resolve()
+    void resolve( float timeStep )
     {
         unsigned int numParticles = m_particles.position.size();
         for ( unsigned int i=0; i<numParticles; ++i )
@@ -109,6 +109,100 @@ private:
         // Reflect velocity
         const float velDot = normal.dot( vel );
         vel -= 2.0f * velDot * normal;
+    }
+
+    const Imath::V2f m_max;
+    const Imath::V2f m_min;
+};
+
+
+class BoxBoundary : public Boundary
+{
+public:
+
+    BoxBoundary( Imath::V2f& max, Imath::V2f& min, ParticleData& particles )
+     : Boundary( particles ),
+       m_max( max ),
+       m_min( min ) {}
+       
+
+    void resolve( float timeStep )
+    {
+        unsigned int numParticles = m_particles.position.size();
+        for ( unsigned int i=0; i<numParticles; ++i )
+        {
+            Imath::V2f& pos = m_particles.position[i];
+            Imath::V2f& vel = m_particles.velocity[i];
+
+            if ( pos.x < m_min.x || pos.y < m_min.y || pos.x > m_max.x || pos.y > m_max.y )
+            {
+                continue;
+            }
+
+            Imath::V2f a( m_min );
+            Imath::V2f b( m_min.x, m_max.y );
+            Imath::V2f c( m_max );
+            Imath::V2f d( m_max.x, m_min.y );
+
+            Imath::V2f abNormal( -1.0f,  0.0 );
+            Imath::V2f bcNormal(  0.0f,  1.0 );
+            Imath::V2f adNormal(  0.0f, -1.0 );
+            Imath::V2f dcNormal(  1.0f,  0.0 );
+
+            compare( pos, vel, a, b, abNormal, timeStep, "a" )
+            || compare( pos, vel, b, c, bcNormal, timeStep, "b" )
+            || compare( pos, vel, a, d, adNormal, timeStep, "c" )
+            || compare( pos, vel, d, c, dcNormal, timeStep, "d" );
+        }
+    }
+
+private:
+
+    bool compare(
+            Imath::V2f& pos,
+            Imath::V2f& vel,
+            Imath::V2f min,
+            Imath::V2f max,
+            Imath::V2f normal,
+            float timeStep,
+            const char* name
+            )
+    {
+        const Imath::V2f diff = pos - min;
+        const float dotProduct = normal.dot( diff );
+
+        if ( dotProduct > 0.0f )
+        {
+            return false;
+        }
+
+        Imath::V2f tVel = vel * timeStep;
+        Imath::V2f ppos = pos - tVel;
+
+        const Imath::V2f prevDiff = ( ppos - min );
+        const float prevDotProduct = normal.dot( prevDiff );
+
+        if ( prevDotProduct < 0.0f )
+        {
+            return false;
+        }
+
+        const float c = ( tVel.y * ( min.x - pos.x ) + tVel.x * ( pos.y - min.y ) )
+            / ( tVel.x * ( max.y - min.y ) - tVel.y * ( max.x - min.x ) ); 
+
+        if ( c > 1.0f || c < 0.0f )
+        {
+            return false;
+        }
+
+        // Correct position
+        pos -= normal * dotProduct;
+
+        // Reflect velocity
+        const float velDot = normal.dot( vel );
+        vel -= 2.0f * velDot * normal;
+
+        return true;
     }
 
     const Imath::V2f m_max;

@@ -19,7 +19,7 @@ void Simulator::step( unsigned int frame, float timeStep )
     const unsigned int numBoundaries = m_boundaries.size();
     for ( unsigned int i=0; i<numBoundaries; ++i )
     {
-        m_boundaries[i]->resolve();
+        m_boundaries[i]->resolve( timeStep );
     }
 
     unsigned int particleCount = m_particles.position.size();

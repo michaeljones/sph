@@ -75,6 +75,23 @@ def two_blocks():
     run( data )
 
 
+def simple_collision():
+
+    print "Simple Collision"
+    data = create(
+            container=Region( min=Point( -2.5, -2.5 ), max=Point( 2.5, 2.5 ) ),
+            particle_regions=[
+                Region( min=Point( 0.2, 1. ), max=Point( 0.4, 1.3 ) ),
+                ],
+            z_depth=-9.0,
+            h=0.1,
+            viscosity=12.94e-2,
+            logfile="log.log",
+            gravity=200.81
+            )
+
+    run( data )
+
 def main( argv ):
 
     parser = OptionParser()
@@ -87,6 +104,7 @@ def main( argv ):
             high_grav_block,
             left_block,
             two_blocks,
+            simple_collision,
             ]
     
     try:

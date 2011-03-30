@@ -207,7 +207,7 @@ bool run( InputData inputData )
     ParticleData particles( *position, *velocity, *mass );
 
     // Fill particle array
-    for ( unsigned int i=0; i < inputData.numParticleRegions; ++i )
+    for ( int i=0; i < inputData.numParticleRegions; ++i )
     {
         float x = inputData.particleRegions[i].min.x, y = inputData.particleRegions[i].min.y;
         float h = inputData.h;
@@ -236,12 +236,22 @@ bool run( InputData inputData )
         }
     }
 
+    //  Displays
+    //
+    std::vector< Display* > displays;
+
     //  Boundaries
     //
     BoundaryPtrArray boundaries;
     Imath::V2f min( inputData.container.min.x, inputData.container.min.y );
     Imath::V2f max( inputData.container.max.x, inputData.container.max.y );
     boundaries.push_back( new ContainerBoundary( max, min, particles ) );
+    displays.push_back( new BoxDisplay( max, min, inputData.zDepth ) );
+
+    Imath::V2f minb( 0.0f, -1.5f );
+    Imath::V2f maxb( 0.5f, -0.5f );
+    boundaries.push_back( new BoxBoundary( maxb, minb, particles ) );
+    displays.push_back( new BoxDisplay( maxb, minb, inputData.zDepth ) );
 
     //  Emitters
     //  
@@ -262,7 +272,9 @@ bool run( InputData inputData )
     }
 
     validator = new NanValidator( particles );
-    display = new Display( particles, inputData.zDepth, inputData.h );
+    displays.push_back( new ParticleDisplay( particles, inputData.zDepth, inputData.h ) );
+
+    display = new MultiDisplay( displays );
 
     Stepper stepper;
     ForceEvaluator forceEvaluator( 
