@@ -14,6 +14,7 @@ def basic_block():
             particle_regions=[
                 Region( min=Point( -0.5, -2.4 ), max=Point( 0.5, 0.5 ) ),
                 ],
+            box_boundaries=[],
             z_depth=-9.0,
             h=0.1,
             viscosity=12.94e-2,
@@ -30,6 +31,7 @@ def left_block():
     data = create(
             container=Region( min=Point( -2.5, -2.5 ), max=Point( 2.5, 2.5 ) ),
             particle_regions=[ Region( min=Point( -2.4, -1.4 ), max=Point( -1.0, 2.4 ) ) ],
+            box_boundaries=[],
             z_depth=-9.0,
             h=0.1,
             viscosity=12.94e-2,
@@ -46,6 +48,7 @@ def high_grav_block():
     data = create(
             container=Region( min=Point( -2.5, -2.5 ), max=Point( 2.5, 2.5 ) ),
             particle_regions=[ Region( min=Point( -2.4, -1.4 ), max=Point( -1.0, 2.4 ) ) ],
+            box_boundaries=[],
             z_depth=-9.0,
             h=0.1,
             viscosity=12.94e-2,
@@ -65,6 +68,7 @@ def two_blocks():
                 Region( min=Point( -2.4, -1.4 ), max=Point( -1.0, 2.4 ) ),
                 Region( min=Point( 1.0, 1.5 ), max=Point( 1.5, 2.0 ) ),
                 ],
+            box_boundaries=[],
             z_depth=-9.0,
             h=0.1,
             viscosity=12.94e-2,
@@ -81,7 +85,10 @@ def simple_collision():
     data = create(
             container=Region( min=Point( -2.5, -2.5 ), max=Point( 2.5, 2.5 ) ),
             particle_regions=[
-                Region( min=Point( 0.2, 1. ), max=Point( 0.4, 1.3 ) ),
+                Region( min=Point( 0.2, 1.0 ), max=Point( 0.4, 1.3 ) ),
+                ],
+            box_boundaries=[
+                Region( min=Point( -1.0, -1.5 ), max=Point( 0.5, -0.5 ) ),
                 ],
             z_depth=-9.0,
             h=0.1,
@@ -95,6 +102,8 @@ def simple_collision():
 def main( argv ):
 
     parser = OptionParser()
+
+    # We currently parse but ignore -d
     parser.add_option( "-d", "--debug", action="store_true", default=False, help="Run in debug mode" )
 
     opts, args = parser.parse_args( argv )

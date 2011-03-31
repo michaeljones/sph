@@ -15,12 +15,19 @@ class Region( Structure ):
             ( "max", Point ),
             ]
 
+class RegionGroup( Structure ):
+
+    _fields_ = [
+            ( "numRegions", c_int ),
+            ( "regions", POINTER( Region ) ),
+            ]
+
 class InputData( Structure ):
 
     _fields_ = [
             ( "container", Region ),
-            ( "numParticleRegions", c_int ),
-            ( "particleRegions", POINTER( Region ) ),
+            ( "particleRegions", RegionGroup ),
+            ( "boxBoundaries", RegionGroup ),
             ( "zDepth", c_float ),
             ( "h", c_float ),
             ( "viscosity", c_float ),
@@ -28,9 +35,24 @@ class InputData( Structure ):
             ( "logfile", c_char_p ),
             ]
 
+def create_region_group( regions ):
+
+    num_regions = len( regions )
+
+    region_data = ( Region * num_regions )(
+            *regions
+            )
+
+    return RegionGroup(
+            numRegions=num_regions,
+            regions=region_data
+            )
+
+
 def create( 
         container,
         particle_regions,
+        box_boundaries,
         z_depth,
         h,
         viscosity,
@@ -38,16 +60,13 @@ def create(
         gravity,
         ):
 
-    num_particle_regions = len( particle_regions )
-
-    particle_region_data = ( Region * num_particle_regions )(
-            *particle_regions
-            )
+    particle_region_group = create_region_group( particle_regions )
+    box_region_group = create_region_group( box_boundaries )
 
     return InputData(
             container=container,
-            numParticleRegions=num_particle_regions,
-            particleRegions=particle_region_data,
+            particleRegions=particle_region_group,
+            boxBoundaries=box_region_group,
             zDepth=z_depth,
             h=h,
             viscosity=viscosity,

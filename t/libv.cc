@@ -135,11 +135,17 @@ struct Region
     Point max;
 };
 
+struct RegionGroup
+{
+    int numRegions;
+    Region* regions;
+};
+
 struct InputData
 {
     Region container;
-    int numParticleRegions;
-    Region* particleRegions;
+    RegionGroup particleRegions;
+    RegionGroup boxBoundaries;
     float zDepth;
     float h;
     float viscosity;
@@ -207,19 +213,21 @@ bool run( InputData inputData )
     ParticleData particles( *position, *velocity, *mass );
 
     // Fill particle array
-    for ( int i=0; i < inputData.numParticleRegions; ++i )
+    for ( int i=0; i < inputData.particleRegions.numRegions; ++i )
     {
-        float x = inputData.particleRegions[i].min.x, y = inputData.particleRegions[i].min.y;
+        float x = inputData.particleRegions.regions[i].min.x, y = inputData.particleRegions.regions[i].min.y;
         float h = inputData.h;
         unsigned int row = 0;
         float jitter = 0.1;
         float scale = 1.0f + 2 * jitter;
 
-        while ( y < inputData.particleRegions[i].max.y )
+        while ( y < inputData.particleRegions.regions[i].max.y )
         {
-            x = row % 2 ? inputData.particleRegions[i].min.x : inputData.particleRegions[i].min.x + ( h * 0.5 * scale );
+            x = row % 2
+                ? inputData.particleRegions.regions[i].min.x
+                : inputData.particleRegions.regions[i].min.x + ( h * 0.5 * scale );
 
-            while ( x < inputData.particleRegions[i].max.x )
+            while ( x < inputData.particleRegions.regions[i].max.x )
             {
                 float xsign = drand48() > 0.5 ? 0.5f : -0.5f;
                 float ysign = drand48() > 0.5 ? 0.5f : -0.5f;
@@ -248,10 +256,20 @@ bool run( InputData inputData )
     boundaries.push_back( new ContainerBoundary( max, min, particles ) );
     displays.push_back( new BoxDisplay( max, min, inputData.zDepth ) );
 
-    Imath::V2f minb( 0.0f, -1.5f );
-    Imath::V2f maxb( 0.5f, -0.5f );
-    boundaries.push_back( new BoxBoundary( maxb, minb, particles ) );
-    displays.push_back( new BoxDisplay( maxb, minb, inputData.zDepth ) );
+    for ( int i=0; i < inputData.boxBoundaries.numRegions; ++i )
+    {
+        Imath::V2f minb(
+                inputData.boxBoundaries.regions[i].min.x,
+                inputData.boxBoundaries.regions[i].min.y
+                );
+        Imath::V2f maxb(
+                inputData.boxBoundaries.regions[i].max.x,
+                inputData.boxBoundaries.regions[i].max.y
+                );
+
+        boundaries.push_back( new BoxBoundary( maxb, minb, particles ) );
+        displays.push_back( new BoxDisplay( maxb, minb, inputData.zDepth ) );
+    }
 
     //  Emitters
     //  
