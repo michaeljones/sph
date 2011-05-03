@@ -6,6 +6,7 @@
 #include <Emitter.hh>
 #include <Stepper.hh>
 #include <ForceEvaluator.hh>
+#include <Output.hh>
 
 // Helper includes
 #include "Display.hh"
@@ -46,6 +47,7 @@ int window;
 Simulator* sim = NULL;
 Display* display = NULL;
 Validator* validator = NULL;
+Output* output = NULL;
 
 const float timeStep = 1.0f / 4800.0f;
 unsigned int frame = 0;
@@ -89,7 +91,11 @@ void DrawGLScene()
     glLoadIdentity();                // Reset The View
 
     // Step the simulation forward
-    sim->step( frame++, timeStep );
+    sim->step( frame, timeStep );
+
+    output->write( frame );
+
+    frame++;
 
     if ( ! validator->valid() )
     {
@@ -290,6 +296,7 @@ bool run( InputData inputData )
     }
 
     validator = new NanValidator( particles );
+    output = new LyOutput( particles, "output/testOutput" );
     displays.push_back( new ParticleDisplay( particles, inputData.zDepth, inputData.h ) );
 
     display = new MultiDisplay( displays );
