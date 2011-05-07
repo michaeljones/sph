@@ -1,7 +1,7 @@
 #ifndef PARTICLE_HH
 #define PARTICLE_HH
 
-#include "Array.h"
+#include "Array.hh"
 
 class ParticleData
 {
