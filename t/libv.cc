@@ -7,6 +7,7 @@
 #include <Stepper.hh>
 #include <ForceEvaluator.hh>
 #include <Output.hh>
+#include <Reader.hh>
 
 // Helper includes
 #include "Display.hh"
@@ -15,6 +16,7 @@
 #include <stdlib.h>
 #include <algorithm>
 
+#include <GL/freeglut_ext.h>
 #include <GL/glut.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -44,13 +46,12 @@ public:
 /* The number of our GLUT window */
 int window; 
 
-Simulator* sim = NULL;
 Display* display = NULL;
-Validator* validator = NULL;
-Output* output = NULL;
+Reader* reader = NULL;
+ParticleData* particles = NULL;
 
-const float timeStep = 1.0f / 4800.0f;
-unsigned int frame = 0;
+int frame = 0;
+int endFrame = 0;
 
 void InitGL(int Width, int Height)
 {
@@ -90,21 +91,17 @@ void DrawGLScene()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);        // Clear The Screen And The Depth Buffer
     glLoadIdentity();                // Reset The View
 
-    // Step the simulation forward
-    sim->step( frame, timeStep );
-
-    output->write( frame );
+    sleep(1);
 
     frame++;
 
-    if ( ! validator->valid() )
+    if ( frame > endFrame )
     {
-        /* shut down our window */
-        glutDestroyWindow(window); 
-
-        /* exit the program...normal termination. */
-        exit(0);
+        glutLeaveMainLoop();
+        return;
     }
+
+    reader->read( frame, particles->position );
 
     // Draw the result
     display->draw();
@@ -129,41 +126,23 @@ void keyPressed(unsigned char key, int x, int y)
     }
 }
 
-struct Point
+
+struct FrameRange
 {
-    float x;
-    float y;
+    int start;
+    int end;
 };
 
-struct Region
+struct ViewData
 {
-    Point min;
-    Point max;
-};
-
-struct RegionGroup
-{
-    int numRegions;
-    Region* regions;
-};
-
-struct InputData
-{
-    Region container;
-    RegionGroup particleRegions;
-    RegionGroup boxBoundaries;
+    FrameRange frameRange;
+    char* filename;
     float zDepth;
-    float h;
-    float viscosity;
-    float gravity;
-    const char* logfile;
 };
-
 
 extern "C" {
 
-
-bool run( InputData inputData )
+bool view( ViewData viewData )
 {    
     /* Initialize GLUT state - glut will take any command line arguments that pertain to it or 
          X Windows - look at its documentation at http://reality.sgi.com/mjk/spec3/spec3.html */    
@@ -207,7 +186,7 @@ bool run( InputData inputData )
 
     glPointSize( 2.0f );
 
-    std::cout << "Initialising Llyr" << std::endl;
+    std::cout << "Initialising Viewer" << std::endl;
 
     srand48( 1 );
 
@@ -216,107 +195,25 @@ bool run( InputData inputData )
     std::auto_ptr< VectorArray > position( new VectorArray );
     std::auto_ptr< VectorArray > velocity( new VectorArray );
     std::auto_ptr< FloatArray > mass( new FloatArray );
-    ParticleData particles( *position, *velocity, *mass );
 
-    // Fill particle array
-    for ( int i=0; i < inputData.particleRegions.numRegions; ++i )
-    {
-        float x = inputData.particleRegions.regions[i].min.x, y = inputData.particleRegions.regions[i].min.y;
-        float h = inputData.h;
-        unsigned int row = 0;
-        float jitter = 0.1;
-        float scale = 1.0f + 2 * jitter;
+    reader = new LyReader( viewData.filename );
 
-        while ( y < inputData.particleRegions.regions[i].max.y )
-        {
-            x = row % 2
-                ? inputData.particleRegions.regions[i].min.x
-                : inputData.particleRegions.regions[i].min.x + ( h * 0.5 * scale );
+    endFrame = viewData.frameRange.end;
 
-            while ( x < inputData.particleRegions.regions[i].max.x )
-            {
-                float xsign = drand48() > 0.5 ? 0.5f : -0.5f;
-                float ysign = drand48() > 0.5 ? 0.5f : -0.5f;
-                float px = x + ( jitter * ( xsign * h ) );
-                float py = y + ( jitter * ( ysign * h ) );
-                particles.position.push_back( Imath::V2f( px, py ) );
-                particles.velocity.push_back( Imath::V2f( 0.0f, 0.0f ) );
-                particles.mass.push_back( 1.0f );
-                x += h * scale;
-            }
-
-            y += h * sin( M_PI / 3.0 ) * scale;
-            row += 1;
-        }
-    }
+    particles = new ParticleData( *position, *velocity, *mass );
 
     //  Displays
     //
     std::vector< Display* > displays;
-
-    //  Boundaries
-    //
-    BoundaryPtrArray boundaries;
-    Imath::V2f min( inputData.container.min.x, inputData.container.min.y );
-    Imath::V2f max( inputData.container.max.x, inputData.container.max.y );
-    boundaries.push_back( new ContainerBoundary( max, min, particles ) );
-    displays.push_back( new BoxDisplay( max, min, inputData.zDepth ) );
-
-    for ( int i=0; i < inputData.boxBoundaries.numRegions; ++i )
-    {
-        Imath::V2f minb(
-                inputData.boxBoundaries.regions[i].min.x,
-                inputData.boxBoundaries.regions[i].min.y
-                );
-        Imath::V2f maxb(
-                inputData.boxBoundaries.regions[i].max.x,
-                inputData.boxBoundaries.regions[i].max.y
-                );
-
-        boundaries.push_back( new BoxBoundary( maxb, minb, particles ) );
-        displays.push_back( new BoxDisplay( maxb, minb, inputData.zDepth ) );
-    }
-
-    //  Emitters
-    //  
-    EmitterPtrArray emitters;
-
-    // emitters.push_back( new PointEmitter( Imath::V2f( 0.0f, 0.0f ), particles ) );
-
-    //  Log file
-    //
-    std::ostream* logStream = NULL;
-    std::ofstream fileStream( inputData.logfile );
-    logStream = &fileStream;
-
-    if ( ! fileStream.is_open() )
-    {
-        logStream = &std::cout;
-        *logStream << "Failed to open file: " << inputData.logfile << std::endl;
-    }
-
-    validator = new NanValidator( particles );
-    output = new LyOutput( particles, "output/testOutput" );
-    displays.push_back( new ParticleDisplay( particles, inputData.zDepth, inputData.h ) );
+    displays.push_back( new ParticleDisplay( *particles, viewData.zDepth ) );
 
     display = new MultiDisplay( displays );
-
-    Stepper stepper;
-    ForceEvaluator forceEvaluator( 
-            inputData.h,
-            inputData.viscosity,
-            inputData.gravity
-            );
-    sim = new Simulator( stepper, forceEvaluator, particles, boundaries, emitters, *logStream );
 
     /* Start Event Processing Engine */    
     glutMainLoop();    
 
-    delete validator;
-    delete sim;
-    delete display;
-
-    std::for_each( boundaries.begin(), boundaries.end(), deleter<Boundary>() );
+    /* shut down our window */
+    glutDestroyWindow(window); 
 
     std::cout << "Finished." << std::endl;
 

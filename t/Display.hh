@@ -20,9 +20,8 @@ class ParticleDisplay : public Display
 {
 public:
 
-    ParticleDisplay( ParticleData& particles, float zDepth, float h )
+    ParticleDisplay( ParticleData& particles, float zDepth )
      : m_zDepth( zDepth ),
-       m_h( h ),
        m_particles( particles ) {}
 
     void draw() const
@@ -74,7 +73,6 @@ public:
 private:
 
     const float m_zDepth;
-    const float m_h;
 
     ParticleData& m_particles;
 };

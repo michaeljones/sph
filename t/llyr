@@ -1,0 +1,11 @@
+#!/bin/bash
+
+export LD_LIBRARY_PATH=${0%llyr}../lib:${0%llyr}
+
+if [ "$1" == "-d" ]; then
+    gdb --args python ${0%llyr}/cmd-llyr.py $*
+else
+    python ${0%llyr}/cmd-llyr.py $*
+fi
+
+

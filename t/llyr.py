@@ -22,17 +22,33 @@ class RegionGroup( Structure ):
             ( "regions", POINTER( Region ) ),
             ]
 
-class InputData( Structure ):
+class FrameRange( Structure ):
 
     _fields_ = [
+            ( "start", c_int ),
+            ( "end", c_int ),
+            ]
+
+class SimData( Structure ):
+
+    _fields_ = [
+            ( "frameRange", FrameRange ),
+            ( "filename", c_char_p ),
             ( "container", Region ),
             ( "particleRegions", RegionGroup ),
             ( "boxBoundaries", RegionGroup ),
-            ( "zDepth", c_float ),
             ( "h", c_float ),
             ( "viscosity", c_float ),
             ( "gravity", c_float ),
             ( "logfile", c_char_p ),
+            ]
+
+class ViewData( Structure ):
+
+    _fields_ = [
+            ( "frameRange", FrameRange ),
+            ( "filename", c_char_p ),
+            ( "zDepth", c_float ),
             ]
 
 def create_region_group( regions ):
@@ -49,34 +65,57 @@ def create_region_group( regions ):
             )
 
 
-def create( 
-        container,
-        particle_regions,
-        box_boundaries,
-        z_depth,
-        h,
-        viscosity,
-        logfile,
-        gravity,
-        ):
+class DataFactory(object):
 
-    particle_region_group = create_region_group( particle_regions )
-    box_region_group = create_region_group( box_boundaries )
+    def create_sim_data(
+            self,
+            frameRange,
+            filename,
+            container,
+            particle_regions,
+            box_boundaries,
+            h,
+            viscosity,
+            logfile,
+            gravity,
+            ):
 
-    return InputData(
-            container=container,
-            particleRegions=particle_region_group,
-            boxBoundaries=box_region_group,
-            zDepth=z_depth,
-            h=h,
-            viscosity=viscosity,
-            logfile=logfile,
-            gravity=gravity,
-            )
+        particle_region_group = create_region_group( particle_regions )
+        box_region_group = create_region_group( box_boundaries )
+
+        return SimData(
+                frameRange=frameRange,
+                filename=filename,
+                container=container,
+                particleRegions=particle_region_group,
+                boxBoundaries=box_region_group,
+                h=h,
+                viscosity=viscosity,
+                logfile=logfile,
+                gravity=gravity,
+                )
+
+
+    def create_view_data(
+            self,
+            frameRange,
+            filename,
+            z_depth,
+            ):
+
+        return ViewData(
+                frameRange=frameRange,
+                filename=filename,
+                zDepth=z_depth,
+                )
 
 def run( data ):
 
-    libv = cdll.LoadLibrary( "libv.so" )
-    libv.run( data )
+    libc = cdll.LoadLibrary( "libc.so" )
+    libc.run( data )
 
+def view( data ):
+
+    libv = cdll.LoadLibrary( "libv.so" )
+    libv.view( data )
 
