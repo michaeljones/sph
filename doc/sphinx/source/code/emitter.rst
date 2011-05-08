@@ -1,0 +1,6 @@
+
+Emitter
+=======
+
+.. doxygenfile:: Emitter.hh
+

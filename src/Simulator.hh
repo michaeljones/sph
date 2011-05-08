@@ -14,6 +14,14 @@ class Simulator
 {
 public:
 
+    /** Constructor
+        \param stepper
+        \param forceEvaluator
+        \param particles
+        \param boundaries
+        \param emitters
+        \param logStream
+        */
     Simulator(
             Stepper& stepper,
             ForceEvaluator& forceEvaluator,
@@ -31,6 +39,11 @@ public:
 
     virtual ~Simulator() {}
 
+    /** Moves the simulation one step forward with the time step provided
+        \param frame Frame number for this step of the simulation
+        \param timeStep Length of the simulation step
+        \todo Time units?
+        */
     void step( unsigned int frame, float timeStep );
 
 private:
