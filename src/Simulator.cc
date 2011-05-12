@@ -27,8 +27,8 @@ void Simulator::step( unsigned int frame, float timeStep )
     //
     //  Evaluate forces at start of time step
     //
-    std::auto_ptr< FloatArray > initialDensity( new FloatArray( particleCount ) );
-    std::auto_ptr< FloatArray > initialPressure( new FloatArray( particleCount )  );
+    std::auto_ptr< FloatArray > initialDensity( new FloatArray( particleCount, 0.0f ) );
+    std::auto_ptr< FloatArray > initialPressure( new FloatArray( particleCount, 0.0f )  );
 
     ForceEvaluator::EvaluationData initialEvalData(
             m_particles.position,
@@ -38,7 +38,7 @@ void Simulator::step( unsigned int frame, float timeStep )
             *initialPressure
         );
 
-    std::auto_ptr< VectorArray > initialForces( new VectorArray( particleCount ) );
+    std::auto_ptr< VectorArray > initialForces( new VectorArray( particleCount, Imath::V2f(0,0) ) );
     m_forceEvaluator.evaluate( initialEvalData, *initialForces );
 
     //
@@ -51,8 +51,8 @@ void Simulator::step( unsigned int frame, float timeStep )
             *initialForces
             );
 
-    std::auto_ptr< VectorArray > midPointPosition( new VectorArray( particleCount ) );
-    std::auto_ptr< VectorArray > midPointVelocity( new VectorArray( particleCount ) );
+    std::auto_ptr< VectorArray > midPointPosition( new VectorArray( particleCount, Imath::V2f(0,0) ) );
+    std::auto_ptr< VectorArray > midPointVelocity( new VectorArray( particleCount, Imath::V2f(0,0) ) );
     Stepper::ToData toData( *midPointPosition, *midPointVelocity );
 
     m_stepper.step( fromData, toData, timeStep * 0.5 );
@@ -60,8 +60,8 @@ void Simulator::step( unsigned int frame, float timeStep )
     //
     //  Evaluate forces at the midpoint
     //
-    std::auto_ptr< FloatArray > midPointDensity( new FloatArray( particleCount ) );
-    std::auto_ptr< FloatArray > midPointPressure( new FloatArray( particleCount)  );
+    std::auto_ptr< FloatArray > midPointDensity( new FloatArray( particleCount, 0.0f ) );
+    std::auto_ptr< FloatArray > midPointPressure( new FloatArray( particleCount, 0.0f )  );
 
     ForceEvaluator::EvaluationData midPointEvalData(
             *midPointPosition,
@@ -71,7 +71,7 @@ void Simulator::step( unsigned int frame, float timeStep )
             *midPointPressure
         );
 
-    std::auto_ptr< VectorArray > midPointForces( new VectorArray( particleCount ) );
+    std::auto_ptr< VectorArray > midPointForces( new VectorArray( particleCount, Imath::V2f(0,0) ) );
     m_forceEvaluator.evaluate( midPointEvalData, *midPointForces );
 
     //
