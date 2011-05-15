@@ -27,6 +27,7 @@ class FrameRange( Structure ):
     _fields_ = [
             ( "start", c_int ),
             ( "end", c_int ),
+            ( "substeps", c_int ),
             ]
 
 class SimData( Structure ):

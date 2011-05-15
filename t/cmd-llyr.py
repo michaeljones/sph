@@ -114,7 +114,7 @@ def more_particles_collision():
 
     factory = DataFactory()
 
-    frame_range = FrameRange( start=1, end=1 )
+    frame_range = FrameRange( start=1, end=20, substeps=100 )
 
     filename = "output/tester"
 
@@ -130,8 +130,8 @@ def more_particles_collision():
                 Region( min=Point( -1.0, -1.5 ), max=Point( 0.5, -0.5 ) ),
                 ],
             h=0.1,
-            viscosity=12.94e-2,
-            gravity=200.81,
+            viscosity=12.94e-4,
+            gravity=9.81,
             logfile="log.log",
             )
 

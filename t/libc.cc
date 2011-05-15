@@ -54,6 +54,7 @@ struct FrameRange
 {
     int start;
     int end;
+    int substeps;
 };
 
 struct SimData
@@ -77,7 +78,10 @@ bool run( SimData inputData )
 {    
     std::cout << "Initialising Llyr" << std::endl;
 
-    std::cout << "Frame Range:        " << inputData.frameRange.start << " - " << inputData.frameRange.end << std::endl;
+    std::cout << "Frame Range:        " << inputData.frameRange.start 
+              << " - " << inputData.frameRange.end 
+              << " (" << inputData.frameRange.substeps 
+              << " substeps)" << std::endl;
     std::cout << "Filename:           " << inputData.filename << std::endl;
     std::cout << "Container:          " 
         << inputData.container.min.x << " " 
@@ -199,12 +203,15 @@ bool run( SimData inputData )
             );
     Simulator sim( stepper, forceEvaluator, particles, boundaries, emitters, *logStream );
 
-    const float timeStep = 1.0f / 4800.0f;
+    const float timeStep = 1.0f / ( 24.0f * inputData.frameRange.substeps );
 
     for ( int frame=inputData.frameRange.start; frame<=inputData.frameRange.end; ++frame )
     {
         std::cout << "Frame " << frame << std::endl;
-        sim.step( frame, timeStep );
+        for ( int substep=0; substep<inputData.frameRange.substeps; ++substep )
+        {
+            sim.step( frame, timeStep );
+        }
         output.write( frame );
     }
 

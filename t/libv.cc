@@ -91,7 +91,8 @@ void DrawGLScene()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);        // Clear The Screen And The Depth Buffer
     glLoadIdentity();                // Reset The View
 
-    sleep(1);
+    // Wait for one frame: 1.0 / 24.0 * 1e6
+    usleep(41666);
 
     frame++;
 
@@ -131,6 +132,7 @@ struct FrameRange
 {
     int start;
     int end;
+    int substeps;
 };
 
 struct ViewData
