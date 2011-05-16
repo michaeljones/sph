@@ -16,12 +16,6 @@ void Simulator::step( unsigned int frame, float timeStep )
         m_emitters[i]->emit();
     }
 
-    const unsigned int numBoundaries = m_boundaries.size();
-    for ( unsigned int i=0; i<numBoundaries; ++i )
-    {
-        m_boundaries[i]->resolve( timeStep );
-    }
-
     unsigned int particleCount = m_particles.position.size();
 
     //
@@ -90,6 +84,15 @@ void Simulator::step( unsigned int frame, float timeStep )
             );
 
     m_stepper.step( midPointFromData, midPointToData, timeStep );
+
+    //
+    //  Resolve boundaries at the end of timestep
+    //
+    const unsigned int numBoundaries = m_boundaries.size();
+    for ( unsigned int i=0; i<numBoundaries; ++i )
+    {
+        m_boundaries[i]->resolve( timeStep );
+    }
 }
 
 
