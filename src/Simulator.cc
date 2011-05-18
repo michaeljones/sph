@@ -10,6 +10,7 @@ void Simulator::step( unsigned int frame, float timeStep )
 {
     m_logStream << "Frame " << frame << " --------------------------------------" << std::endl;
 
+    // TODO: Make sure emitters update the particle bounds
     const unsigned int numEmitters = m_emitters.size();
     for ( unsigned int i=0; i<numEmitters; ++i )
     {
@@ -33,7 +34,7 @@ void Simulator::step( unsigned int frame, float timeStep )
         );
 
     std::auto_ptr< VectorArray > initialForces( new VectorArray( particleCount, Imath::V2f(0,0) ) );
-    m_forceEvaluator.evaluate( initialEvalData, *initialForces );
+    m_forceEvaluator.evaluate( initialEvalData, m_particles.bounds, *initialForces );
 
     //
     //  Step from start to midpoint
@@ -93,6 +94,11 @@ void Simulator::step( unsigned int frame, float timeStep )
     {
         m_boundaries[i]->resolve( timeStep );
     }
+
+    //
+    //  Make sure our bounding box is up to date
+    //
+    m_particles.recalculateBounds();
 }
 
 

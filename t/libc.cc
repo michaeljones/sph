@@ -7,6 +7,7 @@
 #include <Stepper.hh>
 #include <ForceEvaluator.hh>
 #include <Output.hh>
+#include <Grid.hh>
 
 // Helper includes
 #include "Validator.hh"
@@ -119,7 +120,6 @@ bool run( SimData inputData )
     std::auto_ptr< VectorArray > position( new VectorArray );
     std::auto_ptr< VectorArray > velocity( new VectorArray );
     std::auto_ptr< FloatArray > mass( new FloatArray );
-    ParticleData particles( *position, *velocity, *mass );
 
     // Fill particle array
     for ( int i=0; i < inputData.particleRegions.numRegions; ++i )
@@ -142,9 +142,9 @@ bool run( SimData inputData )
                 float ysign = drand48() > 0.5 ? 0.5f : -0.5f;
                 float px = x + ( jitter * ( xsign * h ) );
                 float py = y + ( jitter * ( ysign * h ) );
-                particles.position.push_back( Imath::V2f( px, py ) );
-                particles.velocity.push_back( Imath::V2f( 0.0f, 0.0f ) );
-                particles.mass.push_back( 1.0f );
+                position->push_back( Imath::V2f( px, py ) );
+                velocity->push_back( Imath::V2f( 0.0f, 0.0f ) );
+                mass->push_back( 1.0f );
                 x += h * scale;
             }
 
@@ -153,12 +153,17 @@ bool run( SimData inputData )
         }
     }
 
+    //  Create particle data object
+    //
+    ParticleDataFactory particleDataFactory;
+    std::auto_ptr< ParticleData > particles( particleDataFactory.create( *position, *velocity, *mass ) );
+
     //  Boundaries
     //
     BoundaryPtrArray boundaries;
     Imath::V2f min( inputData.container.min.x, inputData.container.min.y );
     Imath::V2f max( inputData.container.max.x, inputData.container.max.y );
-    boundaries.push_back( new ContainerBoundary( max, min, particles ) );
+    boundaries.push_back( new ContainerBoundary( max, min, *particles ) );
 
     for ( int i=0; i < inputData.boxBoundaries.numRegions; ++i )
     {
@@ -171,14 +176,14 @@ bool run( SimData inputData )
                 inputData.boxBoundaries.regions[i].max.y
                 );
 
-        boundaries.push_back( new BoxBoundary( maxb, minb, particles ) );
+        boundaries.push_back( new BoxBoundary( maxb, minb, *particles ) );
     }
 
     //  Emitters
     //  
     EmitterPtrArray emitters;
 
-    // emitters.push_back( new PointEmitter( Imath::V2f( 0.0f, 0.0f ), particles ) );
+    // emitters.push_back( new PointEmitter( Imath::V2f( 0.0f, 0.0f ), *particles ) );
 
     //  Log file
     //
@@ -192,16 +197,18 @@ bool run( SimData inputData )
         *logStream << "Failed to open file: " << inputData.logfile << std::endl;
     }
 
-    NanValidator validator( particles );
-    LyOutput output( particles, inputData.filename );
+    NanValidator validator( *particles );
+    LyOutput output( *particles, inputData.filename );
 
     Stepper stepper;
+    GridFactory gridFactory( inputData.h );
     ForceEvaluator forceEvaluator( 
             inputData.h,
             inputData.viscosity,
-            inputData.gravity
+            inputData.gravity,
+            gridFactory
             );
-    Simulator sim( stepper, forceEvaluator, particles, boundaries, emitters, *logStream );
+    Simulator sim( stepper, forceEvaluator, *particles, boundaries, emitters, *logStream );
 
     const float timeStep = 1.0f / ( 24.0f * inputData.frameRange.substeps );
 

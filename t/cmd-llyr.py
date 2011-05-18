@@ -114,7 +114,7 @@ def more_particles_collision():
 
     factory = DataFactory()
 
-    frame_range = FrameRange( start=1, end=20, substeps=100 )
+    frame_range = FrameRange( start=1, end=8, substeps=100 )
 
     filename = "output/tester"
 

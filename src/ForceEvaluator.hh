@@ -1,6 +1,10 @@
 #ifndef FORCEEVALUATOR_HH
 #define FORCEEVALUATOR_HH
 
+#include "Grid.hh"
+
+#include <memory>
+
 class Interaction
 {
 public:
@@ -43,24 +47,40 @@ public:
     ForceEvaluator(
             float h,
             float viscosity,
-            float gravity
+            float gravity,
+            const GridFactory& gridFactory
             )
      : m_h( h ),
        m_viscosity( viscosity ),
-       m_gravity( gravity ) {}
+       m_gravity( gravity ), 
+       m_gridFactory( gridFactory ) {}
 
     void evaluate( EvaluationData& data, VectorArray& force )
     {
+        Bounds bounds;
+
+        unsigned int particleCount = data.position.size();
+
+        for ( unsigned int i=0; i<particleCount; ++i )
+        {
+            bounds.extendBy( data.position[i] );
+        }
+
+        evaluate( data, bounds, force );
+    }
+
+    void evaluate( EvaluationData& data, const Bounds& bounds, VectorArray& force )
+    {
         InteractionArray interactions;
 
-        initialPass( data, interactions, force );
+        initialPass( data, bounds, interactions, force );
 
         pressurePass( data, interactions, force );
 
         viscosityPass( data, interactions, force );
     }
 
-    void initialPass( EvaluationData& data, InteractionArray& interactions, VectorArray& force )
+    void initialPass( EvaluationData& data, const Bounds& bounds, InteractionArray& interactions, VectorArray& force )
     {
         VectorArray& position = data.position;
         FloatArray& density = data.density;
@@ -74,47 +94,89 @@ public:
         const float h6 = h5 * h;
         const float h9 = h6 * h2 * h;
 
-        unsigned int particleCount = position.size();
+        std::auto_ptr< const Grid > grid( m_gridFactory.create( data.position, bounds ) );
 
-        for ( unsigned int i=0; i<particleCount; ++i )
+        // Double counting everything!!!!!!!!!!!!!!!!!!
+        //
+        // Still double counting within a cell!!!
+
+        // Iterator over the whole grid, minus the border
+        for ( unsigned int y=1; y < grid->yRes() - 1; ++y )
         {
-            for ( unsigned int j=i+1; j<particleCount; ++j )
+            for ( unsigned int x=1; x < grid->xRes() - 1; ++x )
             {
-                Imath::V2f diff = position[ i ] - position[ j ];
-                const float lengthSquared = diff.x * diff.x + diff.y * diff.y;
+                const Cell& cell = grid->cell( x, y );
 
-                if ( lengthSquared > h2 )
-                    continue;
+                // Iterate over the 9 cells around the current one
+                for ( int i=-1; i < 2; ++i )
+                {
+                    for ( int j=0; j < 2; ++j )
+                    {
+                        // Don't double compare grid cells
+                        if ( i == -1 && j == 0 )
+                            continue;
 
-                //  Calculate Kernel contribution for p1 from p2
-                //
-                //  Use poly6 kernel as noted in the siggraph course notes
-                //
-                const float r2 = lengthSquared;
-                const float a = h2 - r2;
-                const float a3 = a * a * a;
-                const float W = ( 315.0f * a3 ) / ( 64.0f * M_PI * h9 );
+                        const Cell& otherCell = grid->cell( x + i, y + j );
 
-                interactions.push_back( Interaction( i, j, diff, r2 ) );
+                        // Iterate over all the particles in the cell
+                        for ( unsigned int p=0; p<cell.size(); ++p )
+                        {
+                            int pp = cell[ p ];
 
-                //  Calculate density for each particle
-                //
-                density[ i ] += W * mass[ j ];
-                density[ j ] += W * mass[ i ];
+                            // Iterate over the particles in the other cell
+                            for ( unsigned int q=0; q<otherCell.size(); ++q )
+                            {
+                                int qp = otherCell[ q ];
+
+                                // Don't double compare particles in the same cell
+                                if ( i == 0 && j == 0 && p >= q )
+                                    continue;
+
+                                Imath::V2f diff = position[ pp ] - position[ qp ];
+                                const float lengthSquared = diff.x * diff.x + diff.y * diff.y;
+
+                                if ( lengthSquared > h2 )
+                                    continue;
+
+                                //  Calculate Kernel contribution for p1 from p2
+                                //
+                                //  Use poly6 kernel as noted in the siggraph course notes
+                                //
+                                const float r2 = lengthSquared;
+                                const float a = h2 - r2;
+                                const float a3 = a * a * a;
+                                const float W = ( 315.0f * a3 ) / ( 64.0f * M_PI * h9 );
+
+                                interactions.push_back( Interaction( pp, qp, diff, r2 ) );
+
+                                //  Calculate density for each particle
+                                //
+                                density[ pp ] += W * mass[ qp ];
+                                density[ qp ] += W * mass[ pp ];
+                            }
+                        }
+                    }
+                }
+
+                // Iterate over all the particles in the cell
+                for ( unsigned int p=0; p<cell.size(); ++p )
+                {
+                    int pp = cell[ p ];
+
+                    // Account for the mass of the particle itself
+                    const float W = 315.0f / ( 64.0f * M_PI * h3 );
+                    density[ pp ] += W * mass [ pp ];
+
+                    // Calculate pressure based on density
+                    const float k = 0.5f;
+                    const float averageDensity = 1.0f;
+                    pressure[ pp ] = k * ( density[ pp ] - averageDensity );
+
+                    // Apply external forces
+                    const Imath::V2f down( 0.0, -1.0 );
+                    force[ pp ] += down * mass[ pp ] * m_gravity;
+                }
             }
-
-            // Account for the mass of the particle itself
-            const float W = 315.0f / ( 64.0f * M_PI * h3 );
-            density[ i ] += W * mass [ i ];
-
-            // Calculate pressure based on density
-            const float k = 0.5f;
-            const float averageDensity = 1.0f;
-            pressure[ i ] = k * ( density[ i ] - averageDensity );
-
-            // Apply external forces
-            const Imath::V2f down( 0.0, -1.0 );
-            force[ i ] += down * mass[ i ] * m_gravity;
         }
     }
 
@@ -210,6 +272,8 @@ private:
     const float m_h;
     const float m_viscosity;
     const float m_gravity;
+
+    const GridFactory& m_gridFactory;
 
 };
 
