@@ -133,6 +133,8 @@ def more_particles_collision( view_only ):
                     ],
                 h=0.1,
                 viscosity=12.94e-4,
+                pressure_constant=0.5,
+                average_density=1.0,
                 gravity=9.81,
                 logfile="log.log",
                 )
@@ -171,6 +173,8 @@ def larger( view_only ):
                     ],
                 h=0.05,
                 viscosity=12.94e-4,
+                pressure_constant=0.5,
+                average_density=1.0,
                 gravity=9.81,
                 logfile="log.log",
                 )

@@ -40,6 +40,8 @@ class SimData( Structure ):
             ( "boxBoundaries", RegionGroup ),
             ( "h", c_float ),
             ( "viscosity", c_float ),
+            ( "pressureConstant", c_float ),
+            ( "averageDensity", c_float ),
             ( "gravity", c_float ),
             ( "logfile", c_char_p ),
             ]
@@ -77,8 +79,10 @@ class DataFactory(object):
             box_boundaries,
             h,
             viscosity,
-            logfile,
+            pressure_constant,
+            average_density,
             gravity,
+            logfile,
             ):
 
         particle_region_group = create_region_group( particle_regions )
@@ -92,6 +96,8 @@ class DataFactory(object):
                 boxBoundaries=box_region_group,
                 h=h,
                 viscosity=viscosity,
+                pressureConstant=pressure_constant,
+                averageDensity=average_density,
                 logfile=logfile,
                 gravity=gravity,
                 )

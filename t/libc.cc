@@ -67,6 +67,8 @@ struct SimData
     RegionGroup boxBoundaries;
     float h;
     float viscosity;
+    float pressureConstant;
+    float averageDensity;
     float gravity;
     const char* logfile;
 };
@@ -108,8 +110,10 @@ bool run( SimData inputData )
             << inputData.boxBoundaries.regions[i].max.y << " " << std::endl;
     }
 
-    std::cout << "Smoothing distance: " << inputData.h << std::endl;
+    std::cout << "Smoothing Distance: " << inputData.h << std::endl;
     std::cout << "Viscosity:          " << inputData.viscosity << std::endl;
+    std::cout << "Pressure Constant:  " << inputData.pressureConstant << std::endl;
+    std::cout << "Average Density:    " << inputData.averageDensity << std::endl;
     std::cout << "Gravity:            " << inputData.gravity << std::endl;
     std::cout << "Logfile:            " << inputData.logfile << std::endl;
 
@@ -206,6 +210,8 @@ bool run( SimData inputData )
             inputData.h,
             inputData.viscosity,
             inputData.gravity,
+            inputData.pressureConstant,
+            inputData.averageDensity,
             gridFactory
             );
     Simulator sim( stepper, forceEvaluator, *particles, boundaries, emitters, *logStream );

@@ -45,14 +45,18 @@ public:
     };
 
     ForceEvaluator(
-            float h,
-            float viscosity,
-            float gravity,
+            const float h,
+            const float viscosity,
+            const float gravity,
+            const float pressureConstant,
+            const float averageDensity,
             const GridFactory& gridFactory
             )
      : m_h( h ),
        m_viscosity( viscosity ),
        m_gravity( gravity ), 
+       m_pressureConstant( pressureConstant ),
+       m_averageDensity( averageDensity ),
        m_gridFactory( gridFactory ) {}
 
     void evaluate( EvaluationData& data, VectorArray& force )
@@ -168,9 +172,7 @@ public:
                     density[ pp ] += W * mass [ pp ];
 
                     // Calculate pressure based on density
-                    const float k = 0.5f;
-                    const float averageDensity = 1.0f;
-                    pressure[ pp ] = k * ( density[ pp ] - averageDensity );
+                    pressure[ pp ] = m_pressureConstant * ( density[ pp ] - m_averageDensity );
 
                     // Apply external forces
                     const Imath::V2f down( 0.0, -1.0 );
@@ -272,6 +274,8 @@ private:
     const float m_h;
     const float m_viscosity;
     const float m_gravity;
+    const float m_pressureConstant;
+    const float m_averageDensity;
 
     const GridFactory& m_gridFactory;
 
