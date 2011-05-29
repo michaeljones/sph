@@ -70,7 +70,7 @@ class DataFactory(object):
 
     def create_sim_data(
             self,
-            frameRange,
+            frame_range,
             filename,
             container,
             particle_regions,
@@ -85,7 +85,7 @@ class DataFactory(object):
         box_region_group = create_region_group( box_boundaries )
 
         return SimData(
-                frameRange=frameRange,
+                frameRange=frame_range,
                 filename=filename,
                 container=container,
                 particleRegions=particle_region_group,
@@ -99,13 +99,13 @@ class DataFactory(object):
 
     def create_view_data(
             self,
-            frameRange,
+            frame_range,
             filename,
             z_depth,
             ):
 
         return ViewData(
-                frameRange=frameRange,
+                frameRange=frame_range,
                 filename=filename,
                 zDepth=z_depth,
                 )

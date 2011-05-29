@@ -122,7 +122,7 @@ def more_particles_collision( view_only ):
     if not view_only:
 
         data = factory.create_sim_data(
-                frameRange=frame_range,
+                frame_range=frame_range,
                 filename=filename,
                 container=Region( min=Point( -2.5, -2.5 ), max=Point( 2.5, 2.5 ) ),
                 particle_regions=[
@@ -140,7 +140,7 @@ def more_particles_collision( view_only ):
         run( data )
 
     view_data = factory.create_view_data(
-            frameRange=frame_range,
+            frame_range=frame_range,
             filename=filename,
             z_depth=-9.0,
             )
@@ -154,13 +154,13 @@ def larger( view_only ):
 
     frame_range = FrameRange( start=1, end=200, substeps=100 )
 
-    filename = "output/larger"
+    filename = "output/larger2"
 
     print "Larger Simulation"
     if not view_only:
 
         data = factory.create_sim_data(
-                frameRange=frame_range,
+                frame_range=frame_range,
                 filename=filename,
                 container=Region( min=Point( -2.5, -2.5 ), max=Point( 2.5, 2.5 ) ),
                 particle_regions=[
@@ -178,7 +178,7 @@ def larger( view_only ):
         run( data )
 
     view_data = factory.create_view_data(
-            frameRange=frame_range,
+            frame_range=frame_range,
             filename=filename,
             z_depth=-9.0,
             )
