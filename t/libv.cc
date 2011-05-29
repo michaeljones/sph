@@ -202,7 +202,8 @@ bool view( ViewData viewData )
 
     endFrame = viewData.frameRange.end;
 
-    particles = new ParticleData( *position, *velocity, *mass );
+    ParticleDataFactory particleDataFactory;
+    particles = particleDataFactory.create( *position, *velocity, *mass );
 
     //  Displays
     //

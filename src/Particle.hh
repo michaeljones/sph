@@ -13,11 +13,14 @@ public:
     ParticleData( 
         VectorArray& _position,
         VectorArray& _velocity,
-        FloatArray& _mass
+        FloatArray& _mass,
+        const Bounds& _bounds
         )
-     : position( _position ),
+     : bounds( _bounds ),
+       position( _position ),
        velocity( _velocity ),
        mass( _mass ) {}
+
 
 public:
 
@@ -54,11 +57,17 @@ public:
 
     ParticleData* create( VectorArray& pos, VectorArray& velocity, FloatArray& mass ) const
     {
-        ParticleData* data = new ParticleData( pos, velocity, mass );
+        // Calculate the bounds
+        //
+        Bounds bounds;
+        unsigned int particleCount = pos.size();
 
-        data->recalculateBounds();
+        for ( unsigned int i=0; i<particleCount; ++i )
+        {
+            bounds.extendBy( pos[i] );
+        }
 
-        return data;
+        return new ParticleData( pos, velocity, mass, bounds );
     }
 };
 
