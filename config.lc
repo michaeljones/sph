@@ -1,0 +1,23 @@
+
+simulation:
+    frame_range:
+        start: 0
+        end: 200
+        substeps: 100
+    container:
+        min: [ -2.5, -2.5 ]
+        max: [ 2.5, 2.5 ]
+    particles:
+        - region:
+            min: [ -1.0, 0.0 ]
+            max: [ 0.5, 2.0 ]
+    boundaries:
+        - region:
+            min: [ -1.0, 0.0 ]
+            max: [ 0.5, 2.0 ]
+    h: 0.05
+    viscosity: 12.94e-4
+    pressure_constant: 0.5
+    average_density: 1.0
+    gravity: 9.81
+

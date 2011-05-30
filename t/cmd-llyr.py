@@ -4,190 +4,62 @@ from llyr import Region, Point, FrameRange, DataFactory, run, view
 from optparse import OptionParser
 
 import ctypes
+import yaml
 import sys
 
-def basic_block():
+class ConfigFactory(object):
 
-    factory = DataFactory()
+    def read(self, config_file):
 
-    print "Basic Block"
-    data = create_sim_data(
-            frameRange=FrameRange( start=1, end=200 ),
-            container=Region( min=Point( -2.5, -2.5 ), max=Point( 2.5, 2.5 ) ),
-            particle_regions=[
-                Region( min=Point( -0.5, -2.4 ), max=Point( 0.5, 0.5 ) ),
-                ],
-            box_boundaries=[],
-            h=0.1,
-            viscosity=12.94e-2,
-            logfile="log.log",
-            gravity=200.81
-            )
+        file_ = open( config_file )
+        config = yaml.load( file_ )
 
-    run( data )
+        sim_config = config["simulation"]
 
+        sim_data = {}
 
-def left_block():
-
-    factory = DataFactory()
-
-    print "Left Block"
-    data = create_sim_data(
-            frameRange=FrameRange( start=1, end=200 ),
-            container=Region( min=Point( -2.5, -2.5 ), max=Point( 2.5, 2.5 ) ),
-            particle_regions=[ Region( min=Point( -2.4, -1.4 ), max=Point( -1.0, 2.4 ) ) ],
-            box_boundaries=[],
-            h=0.1,
-            viscosity=12.94e-2,
-            logfile="log.log",
-            gravity=200.81
-            )
-
-    run( data )
-
-
-def high_grav_block():
-
-    factory = DataFactory()
-
-    print "High Grav"
-    data = factory.create_sim_data(
-            frameRange=FrameRange( start=1, end=200 ),
-            container=Region( min=Point( -2.5, -2.5 ), max=Point( 2.5, 2.5 ) ),
-            particle_regions=[ Region( min=Point( -2.4, -1.4 ), max=Point( -1.0, 2.4 ) ) ],
-            box_boundaries=[],
-            h=0.1,
-            viscosity=12.94e-2,
-            logfile="log.log",
-            gravity=1000.81
-            )
-
-    run( data )
-
-
-def two_blocks():
-
-    factory = DataFactory()
-
-    print "Two Blocks"
-    data = factory.create_sim_data(
-            frameRange=FrameRange( start=1, end=200 ),
-            container=Region( min=Point( -2.5, -2.5 ), max=Point( 2.5, 2.5 ) ),
-            particle_regions=[
-                Region( min=Point( -2.4, -1.4 ), max=Point( -1.0, 2.4 ) ),
-                Region( min=Point( 1.0, 1.5 ), max=Point( 1.5, 2.0 ) ),
-                ],
-            box_boundaries=[],
-            h=0.1,
-            viscosity=12.94e-2,
-            logfile="log.log",
-            gravity=200.81
-            )
-
-    run( data )
-
-
-def simple_collision():
-
-    factory = DataFactory()
-
-    print "Simple Collision"
-    data = factory.create_sim_data(
-            frameRange=FrameRange( start=1, end=200 ),
-            container=Region( min=Point( -2.5, -2.5 ), max=Point( 2.5, 2.5 ) ),
-            particle_regions=[
-                Region( min=Point( 0.2, 1.0 ), max=Point( 0.4, 1.3 ) ),
-                ],
-            box_boundaries=[
-                Region( min=Point( -1.0, -1.5 ), max=Point( 0.5, -0.5 ) ),
-                ],
-            h=0.1,
-            viscosity=12.94e-2,
-            logfile="log.log",
-            gravity=200.81
-            )
-
-    run( data )
-
-
-def more_particles_collision( view_only ):
-
-    factory = DataFactory()
-
-    frame_range = FrameRange( start=1, end=200, substeps=100 )
-
-    filename = "output/tester"
-
-    print "Collision with More Particles"
-    if not view_only:
-
-        data = factory.create_sim_data(
-                frame_range=frame_range,
-                filename=filename,
-                container=Region( min=Point( -2.5, -2.5 ), max=Point( 2.5, 2.5 ) ),
-                particle_regions=[
-                    Region( min=Point( -1.0, 0.0 ), max=Point( 0.5, 2.0 ) ),
-                    ],
-                box_boundaries=[
-                    Region( min=Point( -1.0, -1.5 ), max=Point( 0.5, -0.5 ) ),
-                    ],
-                h=0.1,
-                viscosity=12.94e-4,
-                pressure_constant=0.5,
-                average_density=1.0,
-                gravity=9.81,
-                logfile="log.log",
+        # Populate simulation data
+        #
+        sim_data["frame_range"] = FrameRange(
+                start=sim_config["frame_range"]["start"],
+                end=sim_config["frame_range"]["end"],
+                substeps=sim_config["frame_range"]["substeps"],
                 )
 
-        run( data )
-
-    view_data = factory.create_view_data(
-            frame_range=frame_range,
-            filename=filename,
-            z_depth=-9.0,
-            )
-
-    view( view_data )
-
-
-def larger( view_only ):
-
-    factory = DataFactory()
-
-    frame_range = FrameRange( start=1, end=200, substeps=100 )
-
-    filename = "output/larger2"
-
-    print "Larger Simulation"
-    if not view_only:
-
-        data = factory.create_sim_data(
-                frame_range=frame_range,
-                filename=filename,
-                container=Region( min=Point( -2.5, -2.5 ), max=Point( 2.5, 2.5 ) ),
-                particle_regions=[
-                    Region( min=Point( -1.0, 0.0 ), max=Point( 0.5, 2.0 ) ),
-                    ],
-                box_boundaries=[
-                    Region( min=Point( -1.0, -1.5 ), max=Point( 0.5, -0.5 ) ),
-                    ],
-                h=0.05,
-                viscosity=12.94e-4,
-                pressure_constant=0.5,
-                average_density=1.0,
-                gravity=9.81,
-                logfile="log.log",
+        sim_data["container"] = Region(
+                min=Point( sim_config["container"]["min"][0], sim_config["container"]["min"][1] ),
+                max=Point( sim_config["container"]["max"][0], sim_config["container"]["max"][1] )
                 )
 
-        run( data )
+        sim_data["particle_regions"] = []
+        for entry in sim_config["particles"]:
+            (key,) = entry.keys()
+            if key == "region":
+                sim_data["particle_regions"].append(
+                        Region(
+                            min=Point( entry["region"]["min"][0], entry["region"]["min"][1] ),
+                            max=Point( entry["region"]["max"][0], entry["region"]["max"][1] )
+                            )
+                        )
 
-    view_data = factory.create_view_data(
-            frame_range=frame_range,
-            filename=filename,
-            z_depth=-9.0,
-            )
+        sim_data["box_boundaries"] = []
+        for entry in sim_config["boundaries"]:
+            (key,) = entry.keys()
+            if key == "region":
+                sim_data["box_boundaries"].append(
+                        Region(
+                            min=Point( entry["region"]["min"][0], entry["region"]["min"][1] ),
+                            max=Point( entry["region"]["max"][0], entry["region"]["max"][1] )
+                            )
+                        )
 
-    view( view_data )
+        sim_data["h"] = sim_config["h"]
+        sim_data["viscosity"] = sim_config["viscosity"]
+        sim_data["pressure_constant"] = sim_config["pressure_constant"]
+        sim_data["average_density"] = sim_config["average_density"]
+        sim_data["gravity"] = sim_config["gravity"]
+
+        return sim_data, None
 
 
 def main( argv ):
@@ -200,24 +72,20 @@ def main( argv ):
 
     opts, args = parser.parse_args( argv )
 
-    runs = [
-            basic_block,
-            high_grav_block,
-            left_block,
-            two_blocks,
-            simple_collision,
-            more_particles_collision,
-            larger,
-            ]
+    config_file = args[1]
 
-    try:
-        index = int( args[ 1 ] )
-    except IndexError:
-        index = len( runs ) - 1 
+    config_factory = ConfigFactory()
+    sim_config, view_config = config_factory.read( config_file )
 
-    dispatcher = runs[ index ]
+    sim_config["filename"] = "output/larger2"
+    sim_config["logfile"] = "log.log"
 
-    dispatcher( opts.view )
+    factory = DataFactory()
+    data = factory.create_sim_data(
+        **sim_config
+        )
+
+    run( data )
 
 
 if __name__ == "__main__":
