@@ -6,6 +6,7 @@ from optparse import OptionParser
 import ctypes
 import yaml
 import sys
+import os
 
 class ConfigFactory(object):
 
@@ -77,7 +78,26 @@ def main( argv ):
     config_factory = ConfigFactory()
     sim_config, view_config = config_factory.read( config_file )
 
-    sim_config["filename"] = "output/larger2"
+    run_name = "run%03d" % 1
+    directory = os.path.join( "output", run_name )
+
+    try:
+        os.makedirs( directory )
+    except OSError:
+        print "Directory already exists: %s" % directory
+
+
+    cached_config_path = os.path.join( directory, "config.lc" )
+    print "Caching config: %s" % cached_config_path
+
+    cached_config = open( cached_config_path, "w" )
+    config_stream = open( config_file )
+    config = yaml.load( config_stream )
+    yaml.dump( config, cached_config )
+    config_stream.close()
+    cached_config.close()
+
+    sim_config["filename"] = os.path.join( directory, "particles" )
     sim_config["logfile"] = "log.log"
 
     factory = DataFactory()
@@ -85,6 +105,7 @@ def main( argv ):
         **sim_config
         )
 
+    print
     run( data )
 
 
