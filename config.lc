@@ -2,7 +2,7 @@
 simulation:
     frame_range:
         start: 0
-        end: 200
+        end: 2
         substeps: 100
     container:
         min: [ -2.5, -2.5 ]

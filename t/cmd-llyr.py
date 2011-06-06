@@ -5,17 +5,13 @@ from optparse import OptionParser
 
 import ctypes
 import yaml
+import glob
 import sys
 import os
 
 class ConfigFactory(object):
 
-    def read(self, config_file):
-
-        file_ = open( config_file )
-        config = yaml.load( file_ )
-
-        sim_config = config["simulation"]
+    def create(self, sim_config):
 
         sim_data = {}
 
@@ -60,45 +56,37 @@ class ConfigFactory(object):
         sim_data["average_density"] = sim_config["average_density"]
         sim_data["gravity"] = sim_config["gravity"]
 
+        sim_data["filename"] = sim_config["filename"]
+        sim_data["logfile"] = sim_config["logfile"]
+
         return sim_data, None
 
 
-def main( argv ):
+def dispatch_run( root, config ):
 
-    parser = OptionParser()
+    runs = glob.glob(os.path.join(root, "run*"))
+    run_num = len(runs) + 1
 
-    # We currently parse but ignore -d
-    parser.add_option( "-d", "--debug", action="store_true", default=False, help="Run in debug mode" )
-    parser.add_option( "-i", "--view", dest="view", action="store_true", default=False, help="Only view the result" )
-
-    opts, args = parser.parse_args( argv )
-
-    config_file = args[1]
-
-    config_factory = ConfigFactory()
-    sim_config, view_config = config_factory.read( config_file )
-
-    run_name = "run%03d" % 1
-    directory = os.path.join( "output", run_name )
+    run_name = "run%03d" % run_num
+    directory = os.path.join( root, run_name )
 
     try:
         os.makedirs( directory )
     except OSError:
         print "Directory already exists: %s" % directory
 
-
     cached_config_path = os.path.join( directory, "config.lc" )
     print "Caching config: %s" % cached_config_path
 
-    cached_config = open( cached_config_path, "w" )
-    config_stream = open( config_file )
-    config = yaml.load( config_stream )
-    yaml.dump( config, cached_config )
-    config_stream.close()
-    cached_config.close()
+    config["filename"] = os.path.join( directory, "particles" )
+    config["logfile"] = os.path.join( directory, "log.log" )
 
-    sim_config["filename"] = os.path.join( directory, "particles" )
-    sim_config["logfile"] = "log.log"
+    config_factory = ConfigFactory()
+    sim_config, view_config = config_factory.create( config )
+
+    cached_config = open( cached_config_path, "w" )
+    yaml.dump( config, cached_config )
+    cached_config.close()
 
     factory = DataFactory()
     data = factory.create_sim_data(
@@ -108,7 +96,70 @@ def main( argv ):
     print
     run( data )
 
+def float_range(start, stop, step):
+    while start < stop:
+        yield start
+        start += step
+
+def main( argv ):
+
+    parser = OptionParser()
+
+    # We currently parse but ignore -d
+    parser.add_option( "-d", "--debug", action="store_true", default=False, help="Run in debug mode" )
+    # parser.add_option( "-i", "--view", dest="view", action="store_true", default=False, help="Only view the result" )
+    parser.add_option( "-w", "--wedge", dest="wedge", default=None, help="Set of a series of simulations over a particular parameter" )
+
+    opts, args = parser.parse_args( argv )
+
+    try:
+        config_file = args[1]
+    except IndexError:
+        sys.stderr.write( "usage: llyr <config file>\n" )
+        return 1
+
+    config_stream = open( config_file )
+    config = yaml.load( config_stream )
+    config_stream.close()
+
+    if opts.wedge:
+
+        wedges = glob.glob("output/wedge*")
+        wedge_num = len(wedges) + 1
+
+        wedge_name = "wedge%03d" % wedge_num
+
+        parameter, start, end, step = opts.wedge.split(":")
+        start, end, step = float(start), float(end), float(step)
+
+        print "Wedging '%s' with [%s, %s, %s]" % ( parameter, start, end, step )
+
+        for value in float_range(start, end, step):
+
+            sim_config = config["simulation"]
+
+            sim_config[parameter] = value
+
+            print "Run with '%s' set to %s" % ( parameter, value )
+
+            dispatch_run(
+                    os.path.join( "output", wedge_name ), 
+                    sim_config
+                    )
+            print
+            print
+
+
+    else:
+
+        sim_config = config["simulation"]
+
+        dispatch_run(
+                "output", 
+                sim_config
+                )
+
 
 if __name__ == "__main__":
-    main( sys.argv )
+    sys.exit( main( sys.argv ) )
 
