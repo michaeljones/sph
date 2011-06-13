@@ -59,8 +59,16 @@ class ConfigFactory(object):
         sim_data["filename"] = sim_config["filename"]
         sim_data["logfile"] = sim_config["logfile"]
 
-        return sim_data, None
+        view_data = {}
+        view_data["frame_range"] = FrameRange(
+                start=sim_config["frame_range"]["start"],
+                end=sim_config["frame_range"]["end"],
+                substeps=sim_config["frame_range"]["substeps"],
+                )
 
+        view_data["filename"] = sim_config["filename"]
+
+        return sim_data, view_data
 
 def dispatch_run( root, config ):
 
@@ -101,6 +109,90 @@ def float_range(start, stop, step):
         yield start
         start += step
 
+class Dispatcher(object):
+
+    def __init__(self):
+
+        pass
+
+    def simulate(self, opts, args):
+
+        try:
+            config_file = args[2]
+        except IndexError:
+            sys.stderr.write( "usage: llyr sim <config file>\n" )
+            return 1
+
+        config_stream = open( config_file )
+        config = yaml.load( config_stream )
+        config_stream.close()
+
+        if opts.wedge:
+
+            wedges = glob.glob("output/wedge*")
+            wedge_num = len(wedges) + 1
+
+            wedge_name = "wedge%03d" % wedge_num
+
+            parameter, start, end, step = opts.wedge.split(":")
+            start, end, step = float(start), float(end), float(step)
+
+            print "Wedging '%s' with [%s, %s, %s]" % ( parameter, start, end, step )
+
+            for value in float_range(start, end, step):
+
+                sim_config = config["simulation"]
+
+                sim_config[parameter] = value
+
+                print "Run with '%s' set to %s" % ( parameter, value )
+
+                dispatch_run(
+                        os.path.join( "output", wedge_name ), 
+                        sim_config
+                        )
+                print
+                print
+
+
+        else:
+
+            sim_config = config["simulation"]
+
+            dispatch_run(
+                    "output", 
+                    sim_config
+                    )
+
+    def view(self, opts, args):
+
+        try:
+            directory = args[2]
+        except IndexError:
+            sys.stderr.write( "usage: llyr view <run directory>\n" )
+            return 1
+
+        # Read config file
+        config_file = os.path.join( directory, "config.lc" )
+        config_stream = open( config_file )
+        config = yaml.load( config_stream )
+        config_stream.close()
+
+        config_factory = ConfigFactory()
+        sim_config, view_config = config_factory.create( config )
+
+        factory = DataFactory()
+        view_data = factory.create_view_data(
+                 frame_range=view_config["frame_range"],
+                 filename=view_config["filename"],
+                 z_depth=-9.0,
+                 )
+
+        view( view_data )
+
+
+
+
 def main( argv ):
 
     parser = OptionParser()
@@ -112,53 +204,17 @@ def main( argv ):
 
     opts, args = parser.parse_args( argv )
 
-    try:
-        config_file = args[1]
-    except IndexError:
-        sys.stderr.write( "usage: llyr <config file>\n" )
-        return 1
+    dispatcher = Dispatcher()
 
-    config_stream = open( config_file )
-    config = yaml.load( config_stream )
-    config_stream.close()
+    if args[1] == "sim":
 
-    if opts.wedge:
+        return dispatcher.simulate(opts, args)
 
-        wedges = glob.glob("output/wedge*")
-        wedge_num = len(wedges) + 1
+    elif args[1] == "view":
 
-        wedge_name = "wedge%03d" % wedge_num
+        return dispatcher.view(opts, args)
 
-        parameter, start, end, step = opts.wedge.split(":")
-        start, end, step = float(start), float(end), float(step)
-
-        print "Wedging '%s' with [%s, %s, %s]" % ( parameter, start, end, step )
-
-        for value in float_range(start, end, step):
-
-            sim_config = config["simulation"]
-
-            sim_config[parameter] = value
-
-            print "Run with '%s' set to %s" % ( parameter, value )
-
-            dispatch_run(
-                    os.path.join( "output", wedge_name ), 
-                    sim_config
-                    )
-            print
-            print
-
-
-    else:
-
-        sim_config = config["simulation"]
-
-        dispatch_run(
-                "output", 
-                sim_config
-                )
-
+    return 1
 
 if __name__ == "__main__":
     sys.exit( main( sys.argv ) )
